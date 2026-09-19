@@ -1,0 +1,52 @@
+/* Контейнер хедера */
+.header {
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-md) 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Внутренняя обёртка для ограничения ширины и центрирования */
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Логотип приложения */
+.logo {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Контейнер для ссылок навигации */
+.nav {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+/* Базовый стиль ссылки */
+.link {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+  padding: var(--spacing-xs) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.link:hover {
+  color: var(--color-primary);
+}
+
+/* Стиль для активной ссылки */
+.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 500;
+}
