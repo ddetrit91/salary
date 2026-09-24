@@ -1,0 +1,45 @@
+/* Контейнер карточки */
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-lg);
+  border-left: 4px solid var(--color-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок карточки (подпись: "Доходы", "Расходы", "Баланс") */
+.title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Сумма */
+.amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+/* Модификаторы для разных типов карточек */
+.income {
+  border-left-color: var(--color-income);
+}
+
+.expense {
+  border-left-color: var(--color-expense);
+}
+
+.balance {
+  border-left-color: var(--color-primary);
+}

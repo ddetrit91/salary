@@ -1,0 +1,146 @@
+/* Контейнер списка транзакций */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Заголовок таблицы */
+.header {
+  display: grid;
+  grid-template-columns: 120px 1fr 150px 100px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Строка транзакции */
+.row {
+  display: grid;
+  grid-template-columns: 120px 1fr 150px 100px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Колонка даты */
+.date {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Колонка категории и комментария */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.category {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.comment {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Колонка суммы */
+.amount {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  text-align: right;
+}
+
+/* Цветовая индикация для доходов */
+.income {
+  color: var(--color-income);
+}
+
+/* Цветовая индикация для расходов */
+.expense {
+  color: var(--color-expense);
+}
+
+/* Колонка действий (кнопки редактирования/удаления) */
+.actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: flex-end;
+}
+
+/* Кнопка действия */
+.actionButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.editButton {
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+}
+
+.editButton:hover {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.deleteButton {
+  background-color: var(--color-bg);
+  color: var(--color-expense);
+}
+
+.deleteButton:hover {
+  background-color: var(--color-expense);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .header {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .date {
+    font-size: var(--font-size-xs);
+  }
+
+  .amount {
+    text-align: left;
+    font-size: var(--font-size-xl);
+  }
+
+  .actions {
+    justify-content: flex-start;
+    margin-top: var(--spacing-sm);
+  }
+}
