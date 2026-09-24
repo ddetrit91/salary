@@ -1,18 +1,16 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
-
-// Временные заглушки для остальных страниц
-const HistoryStub = () => <div>История</div>;
-const AnalyticsStub = () => <div>Аналитика</div>;
+import History from './pages/History/History';
+import Analytics from './pages/Analytics/Analytics';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout><Dashboard /></Layout>} />
-        <Route path="/history" element={<Layout><HistoryStub /></Layout>} />
-        <Route path="/analytics" element={<Layout><AnalyticsStub /></Layout>} />
+        <Route path="/history" element={<Layout><History /></Layout>} />
+        <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
       </Routes>
     </BrowserRouter>
   );
