@@ -1,5 +1,6 @@
 import styles from './TransactionList.module.css';
 import EmptyState from '../EmptyState/EmptyState';
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../../utils/constants';
 
 function TransactionList({ transactions = [], onEdit, onDelete }) {
   // Если транзакций нет — показываем заглушку
@@ -13,7 +14,7 @@ function TransactionList({ transactions = [], onEdit, onDelete }) {
     );
   }
 
-  // Форматирование даты (позже вынесем в formatters.js)
+  // Форматирование даты
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -24,10 +25,11 @@ function TransactionList({ transactions = [], onEdit, onDelete }) {
     });
   };
 
-  // Получение читаемого названия категории (позже будет из constants.js)
-  const getCategoryLabel = (categoryId) => {
-    // Пока просто возвращаем id, позже заменим на поиск в массиве категорий
-    return categoryId || 'Без категории';
+  // Получение читаемого названия категории с учётом типа операции
+  const getCategoryLabel = (categoryId, type) => {
+    const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.label : (categoryId || 'Без категории');
   };
 
   return (
@@ -41,7 +43,7 @@ function TransactionList({ transactions = [], onEdit, onDelete }) {
       </div>
 
       {/* Строки транзакций */}
-      {(transactions || []).map((transaction) => (
+      {transactions.map((transaction) => (
         <div key={transaction.id} className={styles.row}>
           <div className={styles.date}>
             {formatDate(transaction.date)}
@@ -49,14 +51,15 @@ function TransactionList({ transactions = [], onEdit, onDelete }) {
           
           <div className={styles.info}>
             <div className={styles.category}>
-              {getCategoryLabel(transaction.category)}
+              {getCategoryLabel(transaction.category, transaction.type)}
             </div>
             {transaction.comment && (
               <div className={styles.comment}>{transaction.comment}</div>
             )}
           </div>
 
-          <div className={`${styles.amount} ${styles[transaction.type]}`}>
+          {/* Используем transaction.type для знака и CSS-класса */}
+          <div className={`${styles.amount} ${transaction.type === 'income' ? styles.income : styles.expense}`}>
             {transaction.type === 'income' ? '+' : '−'}
             {(transaction.amount ?? 0).toLocaleString('ru-RU')} ₽
           </div>

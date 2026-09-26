@@ -18,7 +18,6 @@ export const config = {
   },
 
   // Путь к файлу базы данных SQLite
-  // Файл будет создан автоматически в папке server/data при первом запуске
   dbPath: path.join(__dirname, '../../data/database.sqlite'),
 };
 

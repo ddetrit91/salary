@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './History.module.css';
 import TransactionList from '../../components/TransactionList/TransactionList';
 import Modal from '../../components/Modal/Modal';
 import TransactionForm from '../../components/TransactionForm/TransactionForm';
-import { getIncomes, updateIncome, deleteIncome } from '../../services/incomeService';
-import { getExpenses, updateExpense, deleteExpense } from '../../services/expenseService';
+import { getIncomes, addIncome, updateIncome, deleteIncome } from '../../services/incomeService';
+import { getExpenses, addExpense, updateExpense, deleteExpense } from '../../services/expenseService';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../../utils/constants';
 
 function History() {
@@ -14,51 +14,54 @@ function History() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  // Состояния для данных
+  // Состояния для данных и UI
   const [allTransactions, setAllTransactions] = useState([]);
-  
-  // Состояние модалки
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+
+  // Функция загрузки всех транзакций (асинхронная)
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Запрашиваем данные с большим лимитом, чтобы получить всю историю
+      const [incomes, expenses] = await Promise.all([
+        getIncomes({ limit: 1000 }),
+        getExpenses({ limit: 1000 })
+      ]);
+      
+      // Объединяем и сортируем по дате (новые первыми)
+      const combined = [...incomes, ...expenses].sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+      });
+      
+      setAllTransactions(combined);
+    } catch (err) {
+      console.error('Ошибка загрузки истории:', err);
+      alert('Не удалось загрузить историю операций');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Загрузка данных при монтировании
   useEffect(() => {
     loadData();
-  }, []);
-
-  // Функция загрузки всех транзакций
-  const loadData = () => {
-    const incomes = getIncomes();
-    const expenses = getExpenses();
-    
-    // Объединяем и сортируем по дате (новые первыми)
-    const combined = [...(incomes || []), ...(expenses || [])].sort((a, b) => {
-      return new Date(b.date) - new Date(a.date);
-    });
-    
-    setAllTransactions(combined);
-  };
+  }, [loadData]);
 
   // Мемоизированная фильтрация транзакций
   const filteredTransactions = useMemo(() => {
     let filtered = allTransactions;
 
-    // Фильтр по типу
     if (typeFilter !== 'all') {
       filtered = filtered.filter((t) => t.type === typeFilter);
     }
-
-    // Фильтр по категории
     if (categoryFilter !== 'all') {
       filtered = filtered.filter((t) => t.category === categoryFilter);
     }
-
-    // Фильтр по дате "с"
     if (dateFrom) {
       filtered = filtered.filter((t) => t.date >= dateFrom);
     }
-
-    // Фильтр по дате "по"
     if (dateTo) {
       filtered = filtered.filter((t) => t.date <= dateTo);
     }
@@ -68,12 +71,8 @@ function History() {
 
   // Категории для фильтра в зависимости от выбранного типа
   const availableCategories = useMemo(() => {
-    if (typeFilter === 'income') {
-      return INCOME_CATEGORIES;
-    } else if (typeFilter === 'expense') {
-      return EXPENSE_CATEGORIES;
-    }
-    // Если тип "все" — показываем все категории из обоих списков
+    if (typeFilter === 'income') return INCOME_CATEGORIES;
+    if (typeFilter === 'expense') return EXPENSE_CATEGORIES;
     return [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
   }, [typeFilter]);
 
@@ -82,73 +81,69 @@ function History() {
     setCategoryFilter('all');
   }, [typeFilter]);
 
-  // Открытие модалки для добавления
+  // Управление модалкой
   const handleOpenModal = () => {
     setEditingTransaction(null);
     setIsModalOpen(true);
   };
 
-  // Закрытие модалки
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
   };
 
-  // Открытие модалки для редактирования
   const handleEdit = (transaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
   };
 
-  // Удаление транзакции
-  const handleDelete = (id) => {
+  // Удаление транзакции (асинхронное)
+  const handleDelete = async (id) => {
     if (!confirm('Вы уверены, что хотите удалить эту операцию?')) {
       return;
     }
 
-    // Находим транзакцию, чтобы определить её тип
     const transaction = allTransactions.find((t) => t.id === id);
     if (!transaction) return;
 
-    // Удаляем через соответствующий сервис
-    if (transaction.type === 'income') {
-      deleteIncome(id);
-    } else {
-      deleteExpense(id);
+    try {
+      if (transaction.type === 'income') {
+        await deleteIncome(id);
+      } else {
+        await deleteExpense(id);
+      }
+      await loadData(); // Перезагружаем данные после успешного удаления
+    } catch (err) {
+      console.error('Ошибка при удалении:', err);
+      alert('Не удалось удалить операцию');
     }
-
-    // Перезагружаем данные
-    loadData();
   };
 
-  // Обработка отправки формы (добавление или редактирование)
-  const handleSubmit = (data) => {
-    if (editingTransaction) {
-      // Режим редактирования
-      if (editingTransaction.type === 'income') {
-        updateIncome(editingTransaction.id, data);
+  // Обработка отправки формы (асинхронная)
+  const handleSubmit = async (data) => {
+    try {
+      if (editingTransaction) {
+        // Режим редактирования
+        if (editingTransaction.type === 'income') {
+          await updateIncome(editingTransaction.id, data);
+        } else {
+          await updateExpense(editingTransaction.id, data);
+        }
       } else {
-        updateExpense(editingTransaction.id, data);
+        // Режим добавления
+        if (data.type === 'income') {
+          await addIncome(data);
+        } else {
+          await addExpense(data);
+        }
       }
-    } else {
-      // Режим добавления
-      if (data.type === 'income') {
-        addIncome(data);
-      } else {
-        addExpense(data);
-      }
+
+      await loadData(); // Перезагружаем данные после сохранения
+      handleCloseModal();
+    } catch (err) {
+      console.error('Ошибка при сохранении:', err);
+      alert('Не удалось сохранить операцию. Проверьте данные.');
     }
-
-    // Перезагружаем данные и закрываем модалку
-    loadData();
-    handleCloseModal();
-  };
-
-  // Получение названия категории по ID
-  const getCategoryLabel = (categoryId, type) => {
-    const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-    const category = (categories || []).find((c) => c.id === categoryId);
-    return category?.label || categoryId;
   };
 
   return (
@@ -176,6 +171,7 @@ function History() {
             className={styles.filterSelect}
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
+            disabled={loading}
           >
             <option value="all">Все категории</option>
             {(availableCategories || []).map((cat) => (
@@ -207,13 +203,19 @@ function History() {
         </div>
       </div>
 
-      {/* Список транзакций */}
+      {/* Список транзакций или индикатор загрузки */}
       <div className={styles.listContainer}>
-        <TransactionList 
-          transactions={filteredTransactions}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p>Загрузка истории...</p>
+          </div>
+        ) : (
+          <TransactionList 
+            transactions={filteredTransactions}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
 
       {/* Плавающая кнопка добавления */}
@@ -221,6 +223,7 @@ function History() {
         className={styles.addButton} 
         title="Добавить операцию"
         onClick={handleOpenModal}
+        disabled={loading}
       >
         +
       </button>

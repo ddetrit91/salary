@@ -38,6 +38,8 @@ export const validateTransaction = (type) => {
     if (!category) {
       throw new ValidationError('Поле "category" обязательно');
     }
+    
+    // Получаем список допустимых категорий для указанного типа
     const validCategories = type === 'income' 
       ? getAllIncomeCategoryIds() 
       : getAllExpenseCategoryIds();
@@ -80,8 +82,8 @@ export const validatePagination = (req, res, next) => {
 
   if (limit !== undefined) {
     const limitNum = parseInt(limit, 10);
-    if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
-      throw new ValidationError('Параметр "limit" должен быть числом от 1 до 100');
+    if (isNaN(limitNum) || limitNum < 1 || limitNum > 1000) {
+      throw new ValidationError('Параметр "limit" должен быть числом от 1 до 1000');
     }
   }
 

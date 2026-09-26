@@ -1,99 +1,62 @@
-import { getItem, setItem, generateId } from './storage';
-import { STORAGE_KEYS } from '../utils/constants';
+import { api } from '../utils/api.js';
 
 /**
- * Получает все доходы из хранилища
- * @returns {Array} массив доходов, отсортированный по дате (новые первыми)
+ * Получает список доходов с пагинацией и фильтрацией
+ * @param {Object} params - параметры запроса (page, limit, category, dateFrom, dateTo)
+ * @returns {Promise<Array>} массив доходов
  */
-export const getIncomes = () => {
-  const incomes = getItem(STORAGE_KEYS.INCOMES, []);
-  // Сортируем по дате: новые сначала
-  return (incomes || []).sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
-  });
+export const getIncomes = async (params = {}) => {
+  const queryParams = new URLSearchParams();
+  if (params.page) queryParams.append('page', params.page);
+  if (params.limit) queryParams.append('limit', params.limit);
+  if (params.category) queryParams.append('category', params.category);
+  if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+  if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+
+  const queryString = queryParams.toString();
+  const response = await api.get(`/incomes${queryString ? `?${queryString}` : ''}`);
+  
+  // Бэкенд возвращает { data: [...], meta: {...} }, мы извлекаем массив данных
+  return response.data || [];
 };
 
 /**
  * Получает доход по ID
  * @param {string} id - идентификатор дохода
- * @returns {Object|null} объект дохода или null, если не найден
+ * @returns {Promise<Object>} объект дохода
  */
-export const getIncomeById = (id) => {
-  if (!id) return null;
-  const incomes = getItem(STORAGE_KEYS.INCOMES, []);
-  return (incomes || []).find((income) => income.id === id) || null;
+export const getIncomeById = async (id) => {
+  const response = await api.get(`/incomes/${id}`);
+  return response.data;
 };
 
 /**
- * Добавляет новый доход в хранилище
- * @param {Object} incomeData - данные дохода (type, category, amount, date, comment)
- * @returns {Object|null} созданный доход с ID или null при ошибке
+ * Добавляет новый доход
+ * @param {Object} incomeData - данные дохода
+ * @returns {Promise<Object>} созданный доход
  */
-export const addIncome = (incomeData) => {
-  if (!incomeData) return null;
-  
-  const incomes = getItem(STORAGE_KEYS.INCOMES, []);
-  
-  // Создаём новый объект с уникальным ID и типом 'income'
-  const newIncome = {
-    id: generateId(),
-    type: 'income',
-    category: incomeData.category || 'other',
-    amount: parseFloat(incomeData.amount) || 0,
-    date: incomeData.date || new Date().toISOString().split('T')[0],
-    comment: incomeData.comment?.trim() || '',
-    createdAt: new Date().toISOString(),
-  };
-  
-  const updatedIncomes = [...(incomes || []), newIncome];
-  const success = setItem(STORAGE_KEYS.INCOMES, updatedIncomes);
-  
-  return success ? newIncome : null;
+export const addIncome = async (incomeData) => {
+  const response = await api.post('/incomes', incomeData);
+  return response.data;
 };
 
 /**
  * Обновляет существующий доход
  * @param {string} id - идентификатор дохода
- * @param {Object} updates - новые данные для обновления
- * @returns {Object|null} обновлённый доход или null, если не найден
+ * @param {Object} updates - новые данные
+ * @returns {Promise<Object>} обновлённый доход
  */
-export const updateIncome = (id, updates) => {
-  if (!id || !updates) return null;
-  
-  const incomes = getItem(STORAGE_KEYS.INCOMES, []);
-  const index = (incomes || []).findIndex((income) => income.id === id);
-  
-  if (index === -1) return null;
-  
-  // Обновляем только переданные поля
-  const updatedIncome = {
-    ...incomes[index],
-    ...updates,
-    id, // ID нельзя изменить
-    type: 'income', // Тип фиксированный
-    updatedAt: new Date().toISOString(),
-  };
-  
-  const updatedIncomes = [...incomes];
-  updatedIncomes[index] = updatedIncome;
-  
-  const success = setItem(STORAGE_KEYS.INCOMES, updatedIncomes);
-  return success ? updatedIncome : null;
+export const updateIncome = async (id, updates) => {
+  const response = await api.put(`/incomes/${id}`, updates);
+  return response.data;
 };
 
 /**
- * Удаляет доход из хранилища
+ * Удаляет доход по ID
  * @param {string} id - идентификатор дохода
- * @returns {boolean} true, если удаление успешно
+ * @returns {Promise<boolean>} true, если успешно
  */
-export const deleteIncome = (id) => {
-  if (!id) return false;
-  
-  const incomes = getItem(STORAGE_KEYS.INCOMES, []);
-  const filteredIncomes = (incomes || []).filter((income) => income.id !== id);
-  
-  // Если ничего не изменилось — значит, доход не найден
-  if (filteredIncomes.length === incomes.length) return false;
-  
-  return setItem(STORAGE_KEYS.INCOMES, filteredIncomes);
+export const deleteIncome = async (id) => {
+  await api.delete(`/incomes/${id}`);
+  return true;
 };
