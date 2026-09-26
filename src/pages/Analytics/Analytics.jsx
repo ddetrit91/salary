@@ -8,22 +8,64 @@ function Analytics() {
   // Состояния для данных графиков
   const [categoryData, setCategoryData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
+  
+  // Состояния UI
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Загрузка данных при монтировании
   useEffect(() => {
     loadData();
   }, []);
 
-  // Функция загрузки данных для графиков
-  const loadData = () => {
-    // Данные для круговой диаграммы (расходы по категориям)
-    const categoryStats = getByCategory('expense');
-    setCategoryData(categoryStats);
-
-    // Данные для столбчатого графика (доходы и расходы по месяцам)
-    const monthlyStats = getMonthlySummary();
-    setMonthlyData(monthlyStats);
+  // Функция загрузки данных для графиков (асинхронная)
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Запрашиваем данные параллельно для скорости
+      const [categoryStats, monthlyStats] = await Promise.all([
+        getByCategory('expense'),
+        getMonthlySummary()
+      ]);
+      
+      setCategoryData(categoryStats);
+      setMonthlyData(monthlyStats);
+    } catch (err) {
+      console.error('Ошибка загрузки аналитики:', err);
+      setError('Не удалось загрузить данные для графиков. Проверьте подключение к серверу.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Индикатор загрузки
+  if (loading) {
+    return (
+      <div className={styles.analytics}>
+        <h1 className={styles.title}>Аналитика</h1>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <p>Загрузка графиков...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Сообщение об ошибке
+  if (error) {
+    return (
+      <div className={styles.analytics}>
+        <h1 className={styles.title}>Аналитика</h1>
+        <div style={{ textAlign: 'center', padding: '40px', color: 'red' }}>
+          <p>{error}</p>
+          <button onClick={loadData} style={{ marginTop: '16px' }}>
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.analytics}>

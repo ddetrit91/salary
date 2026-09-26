@@ -13,6 +13,8 @@ function Dashboard() {
   // Состояния для данных
   const [balance, setBalance] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Состояние модалки
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,13 +24,23 @@ function Dashboard() {
     loadData();
   }, []);
 
-  // Функция загрузки данных
-  const loadData = () => {
-    const balanceData = getBalance();
-    setBalance(balanceData);
-    
-    const recent = getRecentTransactions(5);
-    setRecentTransactions(recent);
+  // Функция загрузки данных (асинхронная)
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const balanceData = await getBalance();
+      setBalance(balanceData);
+      
+      const recent = await getRecentTransactions(5);
+      setRecentTransactions(recent);
+    } catch (err) {
+      console.error('Ошибка загрузки данных:', err);
+      setError('Не удалось загрузить данные. Проверьте подключение к серверу.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Открытие модалки
@@ -41,18 +53,50 @@ function Dashboard() {
     setIsModalOpen(false);
   };
 
-  // Обработка отправки формы
-  const handleSubmit = (data) => {
-    if (data.type === 'income') {
-      addIncome(data);
-    } else {
-      addExpense(data);
+  // Обработка отправки формы (асинхронная)
+  const handleSubmit = async (data) => {
+    try {
+      if (data.type === 'income') {
+        await addIncome(data);
+      } else {
+        await addExpense(data);
+      }
+      
+      // Перезагружаем данные после добавления
+      await loadData();
+      handleCloseModal();
+    } catch (err) {
+      console.error('Ошибка при добавлении операции:', err);
+      alert('Не удалось добавить операцию. Попробуйте ещё раз.');
     }
-    
-    // Перезагружаем данные после добавления
-    loadData();
-    handleCloseModal();
   };
+
+  // Если идёт загрузка — показываем индикатор
+  if (loading) {
+    return (
+      <div className={styles.dashboard}>
+        <h1 className={styles.title}>Главная</h1>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <p>Загрузка данных...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Если ошибка — показываем сообщение
+  if (error) {
+    return (
+      <div className={styles.dashboard}>
+        <h1 className={styles.title}>Главная</h1>
+        <div style={{ textAlign: 'center', padding: '40px', color: 'red' }}>
+          <p>{error}</p>
+          <button onClick={loadData} style={{ marginTop: '16px' }}>
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboard}>

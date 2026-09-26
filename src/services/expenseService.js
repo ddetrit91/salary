@@ -1,99 +1,62 @@
-import { getItem, setItem, generateId } from './storage';
-import { STORAGE_KEYS } from '../utils/constants';
+import { api } from '../utils/api.js';
 
 /**
- * Получает все расходы из хранилища
- * @returns {Array} массив расходов, отсортированный по дате (новые первыми)
+ * Получает список расходов с пагинацией и фильтрацией
+ * @param {Object} params - параметры запроса (page, limit, category, dateFrom, dateTo, isRecurring)
+ * @returns {Promise<Array>} массив расходов
  */
-export const getExpenses = () => {
-  const expenses = getItem(STORAGE_KEYS.EXPENSES, []);
-  // Сортируем по дате: новые сначала
-  return (expenses || []).sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
-  });
+export const getExpenses = async (params = {}) => {
+  const queryParams = new URLSearchParams();
+  if (params.page) queryParams.append('page', params.page);
+  if (params.limit) queryParams.append('limit', params.limit);
+  if (params.category) queryParams.append('category', params.category);
+  if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+  if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+  if (params.isRecurring !== undefined) queryParams.append('isRecurring', params.isRecurring);
+
+  const queryString = queryParams.toString();
+  const response = await api.get(`/expenses${queryString ? `?${queryString}` : ''}`);
+  
+  return response.data || [];
 };
 
 /**
  * Получает расход по ID
  * @param {string} id - идентификатор расхода
- * @returns {Object|null} объект расхода или null, если не найден
+ * @returns {Promise<Object>} объект расхода
  */
-export const getExpenseById = (id) => {
-  if (!id) return null;
-  const expenses = getItem(STORAGE_KEYS.EXPENSES, []);
-  return (expenses || []).find((expense) => expense.id === id) || null;
+export const getExpenseById = async (id) => {
+  const response = await api.get(`/expenses/${id}`);
+  return response.data;
 };
 
 /**
- * Добавляет новый расход в хранилище
- * @param {Object} expenseData - данные расхода (type, category, amount, date, comment)
- * @returns {Object|null} созданный расход с ID или null при ошибке
+ * Добавляет новый расход
+ * @param {Object} expenseData - данные расхода
+ * @returns {Promise<Object>} созданный расход
  */
-export const addExpense = (expenseData) => {
-  if (!expenseData) return null;
-  
-  const expenses = getItem(STORAGE_KEYS.EXPENSES, []);
-  
-  // Создаём новый объект с уникальным ID и типом 'expense'
-  const newExpense = {
-    id: generateId(),
-    type: 'expense',
-    category: expenseData.category || 'other',
-    amount: parseFloat(expenseData.amount) || 0,
-    date: expenseData.date || new Date().toISOString().split('T')[0],
-    comment: expenseData.comment?.trim() || '',
-    createdAt: new Date().toISOString(),
-  };
-  
-  const updatedExpenses = [...(expenses || []), newExpense];
-  const success = setItem(STORAGE_KEYS.EXPENSES, updatedExpenses);
-  
-  return success ? newExpense : null;
+export const addExpense = async (expenseData) => {
+  const response = await api.post('/expenses', expenseData);
+  return response.data;
 };
 
 /**
  * Обновляет существующий расход
  * @param {string} id - идентификатор расхода
- * @param {Object} updates - новые данные для обновления
- * @returns {Object|null} обновлённый расход или null, если не найден
+ * @param {Object} updates - новые данные
+ * @returns {Promise<Object>} обновлённый расход
  */
-export const updateExpense = (id, updates) => {
-  if (!id || !updates) return null;
-  
-  const expenses = getItem(STORAGE_KEYS.EXPENSES, []);
-  const index = (expenses || []).findIndex((expense) => expense.id === id);
-  
-  if (index === -1) return null;
-  
-  // Обновляем только переданные поля
-  const updatedExpense = {
-    ...expenses[index],
-    ...updates,
-    id, // ID нельзя изменить
-    type: 'expense', // Тип фиксированный
-    updatedAt: new Date().toISOString(),
-  };
-  
-  const updatedExpenses = [...expenses];
-  updatedExpenses[index] = updatedExpense;
-  
-  const success = setItem(STORAGE_KEYS.EXPENSES, updatedExpenses);
-  return success ? updatedExpense : null;
+export const updateExpense = async (id, updates) => {
+  const response = await api.put(`/expenses/${id}`, updates);
+  return response.data;
 };
 
 /**
- * Удаляет расход из хранилища
+ * Удаляет расход по ID
  * @param {string} id - идентификатор расхода
- * @returns {boolean} true, если удаление успешно
+ * @returns {Promise<boolean>} true, если успешно
  */
-export const deleteExpense = (id) => {
-  if (!id) return false;
-  
-  const expenses = getItem(STORAGE_KEYS.EXPENSES, []);
-  const filteredExpenses = (expenses || []).filter((expense) => expense.id !== id);
-  
-  // Если ничего не изменилось — значит, расход не найден
-  if (filteredExpenses.length === expenses.length) return false;
-  
-  return setItem(STORAGE_KEYS.EXPENSES, filteredExpenses);
+export const deleteExpense = async (id) => {
+  await api.delete(`/expenses/${id}`);
+  return true;
 };

@@ -7,6 +7,7 @@ const mapRowToCamelCase = (row) => {
   if (!row) return null;
   return {
     id: row.id,
+    type: 'expense', // <-- ДОБАВИЛИ ЭТО ПОЛЕ
     amount: row.amount,
     date: row.date,
     category: row.category,
@@ -37,7 +38,7 @@ export const getAll = ({
   isRecurring 
 } = {}) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+  const limitNum = Math.min(1000, Math.max(1, parseInt(limit, 10) || 20));
   const offset = (pageNum - 1) * limitNum;
 
   // Строим динамический WHERE-блок
