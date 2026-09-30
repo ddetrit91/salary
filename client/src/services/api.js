@@ -1,3 +1,5 @@
+import { logout } from './authService.js';
+
 // Базовый URL берется из .env, с фоллбэком на localhost
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const API_BASE_URL = `${BASE_URL}/api/v1`;
@@ -8,7 +10,7 @@ const API_BASE_URL = `${BASE_URL}/api/v1`;
 const apiRequest = async (path, options = {}) => {
   const url = `${API_BASE_URL}${path}`;
   
-  // Получаем токен из localStorage (ключ совпадает с тем, что в authService.js)
+  // Получаем токен из localStorage
   const token = localStorage.getItem('salary_tracker_token');
 
   const headers = {
@@ -23,6 +25,15 @@ const apiRequest = async (path, options = {}) => {
 
   try {
     const response = await fetch(url, { ...options, headers });
+
+    // Истечение сессии относится ТОЛЬКО к защищённым запросам.
+    // Запросы входа и регистрации (/auth/...) не перезагружаем,
+    // чтобы пользователь увидел понятное сообщение об ошибке.
+    if (response.status === 401 && !path.startsWith('/auth')) {
+      logout(); // Очищаем данные сессии
+      window.location.reload(); // Показываем экран входа
+      throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

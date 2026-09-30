@@ -1,15 +1,33 @@
-import Header from '../Header/Header';
 import styles from './Layout.module.css';
+import Header from '../Header/Header';
 
-function Layout({ children }) {
+/**
+ * Layout рисует шапку на всю ширину,
+ * а контент страниц оборачивает в центрированный контейнер.
+ */
+function Layout({ children, currentPage, onNavigate, user, onLogout }) {
   return (
     <div className={styles.layout}>
-      {/* Шапка с навигацией */}
-      <Header />
-      {/* Основная область для контента страниц */}
-      <main className={styles.main}>
+      {/* Шапка на всю ширину экрана */}
+      <Header 
+        currentPage={currentPage} 
+        onNavigate={onNavigate} 
+        user={user} 
+        onLogout={onLogout} 
+      />
+      
+      {/* Центрированный контейнер для контента страниц */}
+      <div 
+        style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          padding: '24px 16px', 
+          width: '100%', 
+          boxSizing: 'border-box' 
+        }}
+      >
         {children}
-      </main>
+      </div>
     </div>
   );
 }
