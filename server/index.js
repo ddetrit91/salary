@@ -1,5 +1,10 @@
 import app from './src/app.js';
 import config from './src/config/index.js';
+import { initUsersTable } from './src/services/userService.js';
+
+// Инициализируем таблицу пользователей при старте сервера
+initUsersTable();
+console.log('✅ Таблица пользователей инициализирована');
 
 // Запускаем сервер на указанном порту
 const PORT = config.port;

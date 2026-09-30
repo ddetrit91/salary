@@ -1,13 +1,33 @@
 import db from '../db/connection.js';
-import { NotFoundError } from '../middleware/errorHandler.js';
 import crypto from 'crypto';
+
+// Инициализация таблицы расходов с полем user_id
+const initTable = () => {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS expenses (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      category TEXT NOT NULL,
+      comment TEXT,
+      is_recurring INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+};
+
+// Вызываем инициализацию при импорте модуля
+initTable();
 
 // Вспомогательная функция для преобразования полей из snake_case в camelCase
 const mapRowToCamelCase = (row) => {
   if (!row) return null;
   return {
     id: row.id,
-    type: 'expense', // <-- ДОБАВИЛИ ЭТО ПОЛЕ
+    type: 'expense',
     amount: row.amount,
     date: row.date,
     category: row.category,
@@ -19,176 +39,129 @@ const mapRowToCamelCase = (row) => {
 };
 
 /**
- * Получает список расходов с пагинацией и фильтрацией
- * @param {Object} options - опции запроса
- * @param {number} options.page - номер страницы (по умолчанию 1)
- * @param {number} options.limit - количество записей на странице (по умолчанию 20)
- * @param {string} options.category - фильтр по категории (опционально)
- * @param {string} options.dateFrom - фильтр по дате "от" (YYYY-MM-DD, опционально)
- * @param {string} options.dateTo - фильтр по дате "до" (YYYY-MM-DD, опционально)
- * @param {boolean} options.isRecurring - фильтр по признаку регулярности (опционально)
- * @returns {Object} { data: Array, total: number, page: number, limit: number }
+ * Получает список расходов текущего пользователя с пагинацией и фильтрацией
+ * @param {string} userId - ID текущего пользователя
+ * @param {Object} filters - параметры фильтрации
+ * @returns {Object} { data: [...], meta: { total, page, limit, totalPages } }
  */
-export const getAll = ({ 
-  page = 1, 
-  limit = 20, 
-  category, 
-  dateFrom, 
-  dateTo,
-  isRecurring 
-} = {}) => {
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(1000, Math.max(1, parseInt(limit, 10) || 20));
-  const offset = (pageNum - 1) * limitNum;
+export const getAll = (userId, filters = {}) => {
+  const { page = 1, limit = 20, category, dateFrom, dateTo, isRecurring } = filters;
+  const offset = (page - 1) * limit;
 
-  // Строим динамический WHERE-блок
-  const conditions = [];
-  const params = [];
+  let query = 'SELECT * FROM expenses WHERE user_id = ?';
+  const params = [userId];
 
   if (category) {
-    conditions.push('category = ?');
+    query += ' AND category = ?';
     params.push(category);
   }
   if (dateFrom) {
-    conditions.push('date >= ?');
+    query += ' AND date >= ?';
     params.push(dateFrom);
   }
   if (dateTo) {
-    conditions.push('date <= ?');
+    query += ' AND date <= ?';
     params.push(dateTo);
   }
   if (isRecurring !== undefined) {
-    conditions.push('is_recurring = ?');
-    params.push(isRecurring ? 1 : 0);
+    query += ' AND is_recurring = ?';
+    params.push(isRecurring === 'true' || isRecurring === true ? 1 : 0);
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  // Получаем общее количество записей
+  const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
+  const { count } = db.prepare(countQuery).get(...params);
 
-  // Получаем общее количество записей для пагинации
-  const countQuery = `SELECT COUNT(*) as total FROM expenses ${whereClause}`;
-  const { total } = db.prepare(countQuery).get(...params);
+  // Добавляем сортировку и пагинацию
+  query += ' ORDER BY date DESC, created_at DESC LIMIT ? OFFSET ?';
+  params.push(limit, offset);
 
-  // Получаем данные с пагинацией
-  const dataQuery = `
-    SELECT * FROM expenses 
-    ${whereClause}
-    ORDER BY date DESC, created_at DESC
-    LIMIT ? OFFSET ?
-  `;
-  const rows = db.prepare(dataQuery).all(...params, limitNum, offset);
+  const rows = db.prepare(query).all(...params);
 
   return {
     data: rows.map(mapRowToCamelCase),
-    total,
-    page: pageNum,
-    limit: limitNum,
+    meta: {
+      total: count,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(count / limit),
+    },
   };
 };
 
 /**
- * Получает расход по ID
- * @param {string} id - идентификатор расхода
- * @returns {Object} объект расхода в camelCase
- * @throws {NotFoundError} если расход не найден
+ * Получает расход по ID (только если он принадлежит текущему пользователю)
  */
-export const getById = (id) => {
-  const row = db.prepare('SELECT * FROM expenses WHERE id = ?').get(id);
-  if (!row) {
-    throw new NotFoundError(`Расход с ID "${id}" не найден`);
-  }
+export const getById = (id, userId) => {
+  const row = db.prepare('SELECT * FROM expenses WHERE id = ? AND user_id = ?').get(id, userId);
   return mapRowToCamelCase(row);
 };
 
 /**
- * Создаёт новый расход
- * @param {Object} data - данные расхода
- * @param {number} data.amount - сумма (должна быть > 0)
- * @param {string} data.date - дата в формате YYYY-MM-DD
- * @param {string} data.category - категория
- * @param {string} data.comment - комментарий (опционально)
- * @param {boolean} data.isRecurring - признак регулярного расхода (по умолчанию false)
- * @returns {Object} созданный расход в camelCase
+ * Создаёт новый расход для текущего пользователя
  */
-export const create = ({ amount, date, category, comment = '', isRecurring = false }) => {
+export const create = (userId, expenseData) => {
+  const { amount, date, category, comment, isRecurring } = expenseData;
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  const isRecurringInt = isRecurring ? 1 : 0;
 
-  const stmt = db.prepare(`
-    INSERT INTO expenses (id, amount, date, category, comment, is_recurring, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+  db.prepare(`
+    INSERT INTO expenses (id, user_id, amount, date, category, comment, is_recurring, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, userId, amount, date, category, comment || null, isRecurring ? 1 : 0, now, now);
 
-  stmt.run(id, amount, date, category, comment, isRecurringInt, now, now);
-
-  return getById(id);
+  return getById(id, userId);
 };
 
 /**
- * Обновляет существующий расход
- * @param {string} id - идентификатор расхода
- * @param {Object} data - новые данные (только переданные поля будут обновлены)
- * @returns {Object} обновлённый расход в camelCase
- * @throws {NotFoundError} если расход не найден
+ * Обновляет существующий расход (только если он принадлежит текущему пользователю)
  */
-export const update = (id, data) => {
-  // Проверяем, что расход существует
-  const existing = db.prepare('SELECT * FROM expenses WHERE id = ?').get(id);
-  if (!existing) {
-    throw new NotFoundError(`Расход с ID "${id}" не найден`);
-  }
-
+export const update = (id, userId, updates) => {
+  const { amount, date, category, comment, isRecurring } = updates;
   const now = new Date().toISOString();
-  const updates = [];
-  const params = [];
 
-  // Собираем только переданные поля для обновления
-  if (data.amount !== undefined) {
-    updates.push('amount = ?');
-    params.push(data.amount);
-  }
-  if (data.date !== undefined) {
-    updates.push('date = ?');
-    params.push(data.date);
-  }
-  if (data.category !== undefined) {
-    updates.push('category = ?');
-    params.push(data.category);
-  }
-  if (data.comment !== undefined) {
-    updates.push('comment = ?');
-    params.push(data.comment);
-  }
-  if (data.isRecurring !== undefined) {
-    updates.push('is_recurring = ?');
-    params.push(data.isRecurring ? 1 : 0);
-  }
+  const result = db.prepare(`
+    UPDATE expenses 
+    SET amount = COALESCE(?, amount),
+        date = COALESCE(?, date),
+        category = COALESCE(?, category),
+        comment = COALESCE(?, comment),
+        is_recurring = COALESCE(?, is_recurring),
+        updated_at = ?
+    WHERE id = ? AND user_id = ?
+  `).run(
+    amount ?? null,
+    date ?? null,
+    category ?? null,
+    comment !== undefined ? comment : null,
+    isRecurring !== undefined ? (isRecurring ? 1 : 0) : null,
+    now,
+    id,
+    userId
+  );
 
-  // Если нет полей для обновления — просто возвращаем существующую запись
-  if (updates.length === 0) {
-    return mapRowToCamelCase(existing);
+  if (result.changes === 0) {
+    const error = new Error('Расход не найден или не принадлежит пользователю');
+    error.statusCode = 404;
+    error.errorCode = 'NOT_FOUND';
+    throw error;
   }
 
-  updates.push('updated_at = ?');
-  params.push(now);
-  params.push(id);
-
-  const query = `UPDATE expenses SET ${updates.join(', ')} WHERE id = ?`;
-  db.prepare(query).run(...params);
-
-  return getById(id);
+  return getById(id, userId);
 };
 
 /**
- * Удаляет расход по ID
- * @param {string} id - идентификатор расхода
- * @returns {boolean} true, если удаление успешно
- * @throws {NotFoundError} если расход не найден
+ * Удаляет расход по ID (только если он принадлежит текущему пользователю)
  */
-export const deleteExpense = (id) => {
-  const result = db.prepare('DELETE FROM expenses WHERE id = ?').run(id);
+export const deleteExpense = (id, userId) => {
+  const result = db.prepare('DELETE FROM expenses WHERE id = ? AND user_id = ?').run(id, userId);
+  
   if (result.changes === 0) {
-    throw new NotFoundError(`Расход с ID "${id}" не найден`);
+    const error = new Error('Расход не найден или не принадлежит пользователю');
+    error.statusCode = 404;
+    error.errorCode = 'NOT_FOUND';
+    throw error;
   }
+
   return true;
 };

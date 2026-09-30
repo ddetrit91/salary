@@ -1,13 +1,32 @@
 import db from '../db/connection.js';
-import { NotFoundError } from '../middleware/errorHandler.js';
 import crypto from 'crypto';
+
+// Инициализация таблицы с полем user_id
+const initTable = () => {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS incomes (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      category TEXT NOT NULL,
+      comment TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+};
+
+// Вызываем инициализацию при импорте модуля
+initTable();
 
 // Вспомогательная функция для преобразования полей из snake_case в camelCase
 const mapRowToCamelCase = (row) => {
   if (!row) return null;
   return {
     id: row.id,
-    type: 'income', // <-- ДОБАВИЛИ ЭТО ПОЛЕ
+    type: 'income',
     amount: row.amount,
     date: row.date,
     category: row.category,
@@ -18,158 +37,136 @@ const mapRowToCamelCase = (row) => {
 };
 
 /**
- * Получает список доходов с пагинацией и фильтрацией
- * @param {Object} options - опции запроса
- * @param {number} options.page - номер страницы (по умолчанию 1)
- * @param {number} options.limit - количество записей на странице (по умолчанию 20)
- * @param {string} options.category - фильтр по категории (опционально)
- * @param {string} options.dateFrom - фильтр по дате "от" (YYYY-MM-DD, опционально)
- * @param {string} options.dateTo - фильтр по дате "до" (YYYY-MM-DD, опционально)
- * @returns {Object} { data: Array, total: number, page: number, limit: number }
+ * Получает список доходов текущего пользователя с пагинацией и фильтрацией
+ * @param {string} userId - ID текущего пользователя
+ * @param {Object} filters - параметры фильтрации (page, limit, category, dateFrom, dateTo)
+ * @returns {Object} { data: [...], meta: { total, page, limit, totalPages } }
  */
-export const getAll = ({ page = 1, limit = 20, category, dateFrom, dateTo } = {}) => {
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(1000, Math.max(1, parseInt(limit, 10) || 20));
-  const offset = (pageNum - 1) * limitNum;
+export const getAll = (userId, filters = {}) => {
+  const { page = 1, limit = 20, category, dateFrom, dateTo } = filters;
+  const offset = (page - 1) * limit;
 
-  // Строим динамический WHERE-блок
-  const conditions = [];
-  const params = [];
+  let query = 'SELECT * FROM incomes WHERE user_id = ?';
+  const params = [userId];
 
   if (category) {
-    conditions.push('category = ?');
+    query += ' AND category = ?';
     params.push(category);
   }
   if (dateFrom) {
-    conditions.push('date >= ?');
+    query += ' AND date >= ?';
     params.push(dateFrom);
   }
   if (dateTo) {
-    conditions.push('date <= ?');
+    query += ' AND date <= ?';
     params.push(dateTo);
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
   // Получаем общее количество записей для пагинации
-  const countQuery = `SELECT COUNT(*) as total FROM incomes ${whereClause}`;
-  const { total } = db.prepare(countQuery).get(...params);
+  const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
+  const { count } = db.prepare(countQuery).get(...params);
 
-  // Получаем данные с пагинацией
-  const dataQuery = `
-    SELECT * FROM incomes 
-    ${whereClause}
-    ORDER BY date DESC, created_at DESC
-    LIMIT ? OFFSET ?
-  `;
-  const rows = db.prepare(dataQuery).all(...params, limitNum, offset);
+  // Добавляем сортировку и пагинацию
+  query += ' ORDER BY date DESC, created_at DESC LIMIT ? OFFSET ?';
+  params.push(limit, offset);
+
+  const rows = db.prepare(query).all(...params);
 
   return {
     data: rows.map(mapRowToCamelCase),
-    total,
-    page: pageNum,
-    limit: limitNum,
+    meta: {
+      total: count,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(count / limit),
+    },
   };
 };
 
 /**
- * Получает доход по ID
+ * Получает доход по ID (только если он принадлежит текущему пользователю)
  * @param {string} id - идентификатор дохода
- * @returns {Object} объект дохода в camelCase
- * @throws {NotFoundError} если доход не найден
+ * @param {string} userId - ID текущего пользователя
+ * @returns {Object} объект дохода
  */
-export const getById = (id) => {
-  const row = db.prepare('SELECT * FROM incomes WHERE id = ?').get(id);
-  if (!row) {
-    throw new NotFoundError(`Доход с ID "${id}" не найден`);
-  }
+export const getById = (id, userId) => {
+  const row = db.prepare('SELECT * FROM incomes WHERE id = ? AND user_id = ?').get(id, userId);
   return mapRowToCamelCase(row);
 };
 
 /**
- * Создаёт новый доход
- * @param {Object} data - данные дохода
- * @param {number} data.amount - сумма (должна быть > 0)
- * @param {string} data.date - дата в формате YYYY-MM-DD
- * @param {string} data.category - категория
- * @param {string} data.comment - комментарий (опционально)
- * @returns {Object} созданный доход в camelCase
+ * Создаёт новый доход для текущего пользователя
+ * @param {string} userId - ID текущего пользователя
+ * @param {Object} incomeData - данные дохода
+ * @returns {Object} созданный доход
  */
-export const create = ({ amount, date, category, comment = '' }) => {
+export const create = (userId, incomeData) => {
+  const { amount, date, category, comment } = incomeData;
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  const stmt = db.prepare(`
-    INSERT INTO incomes (id, amount, date, category, comment, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
+  db.prepare(`
+    INSERT INTO incomes (id, user_id, amount, date, category, comment, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, userId, amount, date, category, comment || null, now, now);
 
-  stmt.run(id, amount, date, category, comment, now, now);
-
-  return getById(id);
+  return getById(id, userId);
 };
 
 /**
- * Обновляет существующий доход
+ * Обновляет существующий доход (только если он принадлежит текущему пользователю)
  * @param {string} id - идентификатор дохода
- * @param {Object} data - новые данные (только переданные поля будут обновлены)
- * @returns {Object} обновлённый доход в camelCase
- * @throws {NotFoundError} если доход не найден
+ * @param {string} userId - ID текущего пользователя
+ * @param {Object} updates - новые данные
+ * @returns {Object} обновлённый доход
  */
-export const update = (id, data) => {
-  // Проверяем, что доход существует
-  const existing = db.prepare('SELECT * FROM incomes WHERE id = ?').get(id);
-  if (!existing) {
-    throw new NotFoundError(`Доход с ID "${id}" не найден`);
-  }
-
+export const update = (id, userId, updates) => {
+  const { amount, date, category, comment } = updates;
   const now = new Date().toISOString();
-  const updates = [];
-  const params = [];
 
-  // Собираем только переданные поля для обновления
-  if (data.amount !== undefined) {
-    updates.push('amount = ?');
-    params.push(data.amount);
-  }
-  if (data.date !== undefined) {
-    updates.push('date = ?');
-    params.push(data.date);
-  }
-  if (data.category !== undefined) {
-    updates.push('category = ?');
-    params.push(data.category);
-  }
-  if (data.comment !== undefined) {
-    updates.push('comment = ?');
-    params.push(data.comment);
+  const result = db.prepare(`
+    UPDATE incomes 
+    SET amount = COALESCE(?, amount),
+        date = COALESCE(?, date),
+        category = COALESCE(?, category),
+        comment = COALESCE(?, comment),
+        updated_at = ?
+    WHERE id = ? AND user_id = ?
+  `).run(
+    amount ?? null,
+    date ?? null,
+    category ?? null,
+    comment !== undefined ? comment : null,
+    now,
+    id,
+    userId
+  );
+
+  if (result.changes === 0) {
+    const error = new Error('Доход не найден или не принадлежит пользователю');
+    error.statusCode = 404;
+    error.errorCode = 'NOT_FOUND';
+    throw error;
   }
 
-  // Если нет полей для обновления — просто возвращаем существующую запись
-  if (updates.length === 0) {
-    return mapRowToCamelCase(existing);
-  }
-
-  updates.push('updated_at = ?');
-  params.push(now);
-  params.push(id);
-
-  const query = `UPDATE incomes SET ${updates.join(', ')} WHERE id = ?`;
-  db.prepare(query).run(...params);
-
-  return getById(id);
+  return getById(id, userId);
 };
 
 /**
- * Удаляет доход по ID
+ * Удаляет доход по ID (только если он принадлежит текущему пользователю)
  * @param {string} id - идентификатор дохода
- * @returns {boolean} true, если удаление успешно
- * @throws {NotFoundError} если доход не найден
+ * @param {string} userId - ID текущего пользователя
+ * @returns {boolean} true, если успешно удалён
  */
-export const deleteIncome = (id) => {
-  const result = db.prepare('DELETE FROM incomes WHERE id = ?').run(id);
+export const deleteIncome = (id, userId) => {
+  const result = db.prepare('DELETE FROM incomes WHERE id = ? AND user_id = ?').run(id, userId);
+  
   if (result.changes === 0) {
-    throw new NotFoundError(`Доход с ID "${id}" не найден`);
+    const error = new Error('Доход не найден или не принадлежит пользователю');
+    error.statusCode = 404;
+    error.errorCode = 'NOT_FOUND';
+    throw error;
   }
+
   return true;
 };
