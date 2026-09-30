@@ -1,9 +1,33 @@
 import db from '../db/connection.js';
 
+// Соответствие технических ID категорий русским названиям
+const CATEGORY_LABELS = {
+  // Доходы
+  salary: 'Зарплата',
+  freelance: 'Фриланс',
+  bonus: 'Премия',
+  debt_return: 'Возврат долга',
+  deposit_interest: 'Проценты по вкладу',
+  // Расходы
+  groceries: 'Продукты',
+  utilities: 'Коммунальные услуги',
+  rent: 'Аренда жилья',
+  subscriptions: 'Подписки',
+  transport: 'Транспорт',
+  health: 'Здоровье',
+  clothing: 'Одежда',
+  entertainment: 'Развлечения',
+  communication: 'Связь',
+  // Общие
+  gift: 'Подарок',
+  other: 'Другое',
+};
+
+// Возвращает русское название категории или сам ID, если название не найдено
+const getLabel = (categoryId) => CATEGORY_LABELS[categoryId] || categoryId;
+
 /**
  * Получает общий баланс текущего пользователя
- * @param {string} userId - ID текущего пользователя
- * @returns {Object} { totalIncome, totalExpense, balance }
  */
 export const getBalance = (userId) => {
   const totalIncomeRow = db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM incomes WHERE user_id = ?').get(userId);
@@ -20,10 +44,7 @@ export const getBalance = (userId) => {
 };
 
 /**
- * Получает суммы по категориям для текущего пользователя
- * @param {string} userId - ID текущего пользователя
- * @param {string} type - 'income' или 'expense'
- * @returns {Array} массив объектов { name, value, count, color }
+ * Получает суммы по категориям для текущего пользователя (с русскими названиями)
  */
 export const getByCategory = (userId, type = 'expense') => {
   const tableName = type === 'income' ? 'incomes' : 'expenses';
@@ -40,7 +61,7 @@ export const getByCategory = (userId, type = 'expense') => {
   const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#E91E63', '#00BCD4', '#FFEB3B', '#795548', '#607D8B', '#F44336'];
   
   return rows.map((row, index) => ({
-    name: row.category,
+    name: getLabel(row.category), // <-- Русское название вместо ID
     value: row.total,
     count: row.count,
     color: colors[index % colors.length],
@@ -49,8 +70,6 @@ export const getByCategory = (userId, type = 'expense') => {
 
 /**
  * Получает ежемесячную сводку доходов и расходов текущего пользователя
- * @param {string} userId - ID текущего пользователя
- * @returns {Array} массив объектов { month, income, expense }
  */
 export const getMonthlySummary = (userId) => {
   const rows = db.prepare(`

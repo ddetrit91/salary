@@ -17,6 +17,13 @@ const initTable = () => {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+  
+  try {
+    db.exec(`ALTER TABLE expenses ADD COLUMN user_id TEXT`);
+    console.log('✅ Добавлена колонка user_id в таблицу expenses');
+  } catch (e) {
+    // Колонка уже есть
+  }
 };
 
 // Вызываем инициализацию при импорте модуля
@@ -40,9 +47,6 @@ const mapRowToCamelCase = (row) => {
 
 /**
  * Получает список расходов текущего пользователя с пагинацией и фильтрацией
- * @param {string} userId - ID текущего пользователя
- * @param {Object} filters - параметры фильтрации
- * @returns {Object} { data: [...], meta: { total, page, limit, totalPages } }
  */
 export const getAll = (userId, filters = {}) => {
   const { page = 1, limit = 20, category, dateFrom, dateTo, isRecurring } = filters;
@@ -68,11 +72,9 @@ export const getAll = (userId, filters = {}) => {
     params.push(isRecurring === 'true' || isRecurring === true ? 1 : 0);
   }
 
-  // Получаем общее количество записей
   const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
   const { count } = db.prepare(countQuery).get(...params);
 
-  // Добавляем сортировку и пагинацию
   query += ' ORDER BY date DESC, created_at DESC LIMIT ? OFFSET ?';
   params.push(limit, offset);
 

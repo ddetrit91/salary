@@ -1,33 +1,41 @@
-import { NavLink } from 'react-router-dom';
 import styles from './Header.module.css';
 
-function Header() {
+function Header({ currentPage, onNavigate, user, onLogout }) {
+  const navItems = [
+    { id: 'dashboard', label: 'Главная' },
+    { id: 'history', label: 'История' },
+    { id: 'analytics', label: 'Аналитика' },
+  ];
+
   return (
     <header className={styles.header}>
-      <div className={styles.wrapper}>
-        <div className={styles.logo}>💰 Salary Tracker</div>
-        <nav className={styles.nav}>
-          {/* Атрибут end нужен для точного совпадения с корневым путём "/" */}
-          <NavLink 
-            to="/" 
-            end 
-            className={({ isActive }) => isActive ? `${styles.link} ${styles.active}` : styles.link}
+      <div className={styles.logo}>
+        💰 Salary Tracker
+      </div>
+      
+      <nav className={styles.nav}>
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            className={`${styles.navButton} ${currentPage === item.id ? styles.active : ''}`}
+            onClick={() => onNavigate(item.id)}
           >
-            Главная
-          </NavLink>
-          <NavLink 
-            to="/history" 
-            className={({ isActive }) => isActive ? `${styles.link} ${styles.active}` : styles.link}
-          >
-            История
-          </NavLink>
-          <NavLink 
-            to="/analytics" 
-            className={({ isActive }) => isActive ? `${styles.link} ${styles.active}` : styles.link}
-          >
-            Аналитика
-          </NavLink>
-        </nav>
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className={styles.userInfo}>
+        <span className={styles.username}>
+          👤 {user?.username || 'Пользователь'}
+        </span>
+        <button 
+          className={styles.logoutButton}
+          onClick={onLogout}
+          title="Выйти из аккаунта"
+        >
+          Выйти
+        </button>
       </div>
     </header>
   );

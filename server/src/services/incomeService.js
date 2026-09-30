@@ -16,6 +16,14 @@ const initTable = () => {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+  
+  // Пытаемся добавить user_id, если таблица уже существует без него
+  try {
+    db.exec(`ALTER TABLE incomes ADD COLUMN user_id TEXT`);
+    console.log('✅ Добавлена колонка user_id в таблицу incomes');
+  } catch (e) {
+    // Колонка уже есть — это нормально
+  }
 };
 
 // Вызываем инициализацию при импорте модуля
@@ -38,9 +46,6 @@ const mapRowToCamelCase = (row) => {
 
 /**
  * Получает список доходов текущего пользователя с пагинацией и фильтрацией
- * @param {string} userId - ID текущего пользователя
- * @param {Object} filters - параметры фильтрации (page, limit, category, dateFrom, dateTo)
- * @returns {Object} { data: [...], meta: { total, page, limit, totalPages } }
  */
 export const getAll = (userId, filters = {}) => {
   const { page = 1, limit = 20, category, dateFrom, dateTo } = filters;
@@ -62,11 +67,9 @@ export const getAll = (userId, filters = {}) => {
     params.push(dateTo);
   }
 
-  // Получаем общее количество записей для пагинации
   const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
   const { count } = db.prepare(countQuery).get(...params);
 
-  // Добавляем сортировку и пагинацию
   query += ' ORDER BY date DESC, created_at DESC LIMIT ? OFFSET ?';
   params.push(limit, offset);
 
@@ -85,9 +88,6 @@ export const getAll = (userId, filters = {}) => {
 
 /**
  * Получает доход по ID (только если он принадлежит текущему пользователю)
- * @param {string} id - идентификатор дохода
- * @param {string} userId - ID текущего пользователя
- * @returns {Object} объект дохода
  */
 export const getById = (id, userId) => {
   const row = db.prepare('SELECT * FROM incomes WHERE id = ? AND user_id = ?').get(id, userId);
@@ -96,9 +96,6 @@ export const getById = (id, userId) => {
 
 /**
  * Создаёт новый доход для текущего пользователя
- * @param {string} userId - ID текущего пользователя
- * @param {Object} incomeData - данные дохода
- * @returns {Object} созданный доход
  */
 export const create = (userId, incomeData) => {
   const { amount, date, category, comment } = incomeData;
@@ -115,10 +112,6 @@ export const create = (userId, incomeData) => {
 
 /**
  * Обновляет существующий доход (только если он принадлежит текущему пользователю)
- * @param {string} id - идентификатор дохода
- * @param {string} userId - ID текущего пользователя
- * @param {Object} updates - новые данные
- * @returns {Object} обновлённый доход
  */
 export const update = (id, userId, updates) => {
   const { amount, date, category, comment } = updates;
@@ -154,9 +147,6 @@ export const update = (id, userId, updates) => {
 
 /**
  * Удаляет доход по ID (только если он принадлежит текущему пользователю)
- * @param {string} id - идентификатор дохода
- * @param {string} userId - ID текущего пользователя
- * @returns {boolean} true, если успешно удалён
  */
 export const deleteIncome = (id, userId) => {
   const result = db.prepare('DELETE FROM incomes WHERE id = ? AND user_id = ?').run(id, userId);

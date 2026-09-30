@@ -1,25 +1,24 @@
 import { Router } from 'express';
-import * as summaryController from '../controllers/summaryController.js';
+import * as controller from '../controllers/summaryController.js';
 
 const router = Router();
 
 /**
  * GET /api/v1/summary/balance
- * Получение общего баланса: доходы, расходы, разница
+ * Получение баланса текущего пользователя
  */
-router.get('/balance', summaryController.getBalance);
+router.get('/balance', controller.getBalance);
 
 /**
  * GET /api/v1/summary/by-category
- * Получение распределения по категориям
- * Query: type - 'income' или 'expense' (по умолчанию 'expense')
+ * Получение статистики по категориям
  */
-router.get('/by-category', summaryController.getByCategory);
+router.get('/by-category', controller.getByCategory);
 
 /**
  * GET /api/v1/summary/by-month
- * Получение ежемесячной динамики доходов и расходов
+ * Получение ежемесячной сводки
  */
-router.get('/by-month', summaryController.getByMonth);
+router.get('/by-month', controller.getMonthlySummary);
 
 export default router;
