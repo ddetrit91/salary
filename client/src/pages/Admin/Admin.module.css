@@ -1,0 +1,367 @@
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+/* ---------- Вкладки ---------- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: #f1f3f5;
+  color: #212529;
+}
+
+.tabActive {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.tabActive:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* ---------- Секции и ошибки ---------- */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #343a40;
+  margin: 0;
+}
+
+.error {
+  background-color: #fff5f5;
+  color: #e03131;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #ffc9c9;
+  font-size: 14px;
+}
+
+/* ---------- Форма создания пользователя ---------- */
+.form {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.formRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.input,
+.select {
+  padding: 10px 14px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: #ffffff;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #4dabf7;
+}
+
+.button {
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #2563eb;
+}
+
+/* ---------- Таблицы ---------- */
+.table {
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr 1.2fr 1.4fr 2fr;
+  gap: 12px;
+  padding: 12px 20px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.tableHeader {
+  background-color: #f8f9fa;
+  color: #868e96;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tableRow {
+  border-top: 1px solid #f1f3f5;
+  color: #495057;
+}
+
+.tableRow:hover {
+  background-color: #f8f9fa;
+}
+
+.cellBold {
+  font-weight: 600;
+  color: #212529;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ---------- Бейджи ролей ---------- */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badgeAdmin {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.badgeUser {
+  background-color: #f1f3f5;
+  color: #495057;
+}
+
+/* ---------- Кнопки действий ---------- */
+.smallButton {
+  padding: 6px 10px;
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.smallButton:hover {
+  background-color: #e9ecef;
+}
+
+.dangerButton {
+  background-color: #fff5f5;
+  color: #e03131;
+  border-color: #ffc9c9;
+}
+
+.dangerButton:hover {
+  background-color: #ffe3e3;
+}
+
+/* ---------- Журнал событий ---------- */
+.eventList {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.eventItem {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 20px;
+  border-top: 1px solid #f1f3f5;
+  font-size: 13px;
+  color: #495057;
+}
+
+.eventItem:first-child {
+  border-top: none;
+}
+
+.eventTime {
+  color: #868e96;
+  font-size: 12px;
+  min-width: 130px;
+}
+
+.eventMethod {
+  background-color: #e7f5ff;
+  color: #1971c2;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.eventPath {
+  color: #868e96;
+  font-family: monospace;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Карточки статистики ---------- */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  text-align: center;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #868e96;
+  margin-top: 6px;
+}
+
+/* ---------- Мини-графики ---------- */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barLabel {
+  min-width: 90px;
+  font-size: 13px;
+  color: #868e96;
+}
+
+.barTrack {
+  flex: 1;
+  height: 10px;
+  background-color: #f1f3f5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background-color: #51cf66;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.barFillBlue {
+  background-color: #4dabf7;
+}
+
+.barValue {
+  min-width: 30px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* ---------- Настройки ---------- */
+.settingsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.settingsHint {
+  font-size: 13px;
+  color: #868e96;
+  margin-top: 4px;
+}
+
+/* ---------- Адаптивность для узких экранов ---------- */
+@media (max-width: 900px) {
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+}

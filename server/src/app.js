@@ -4,8 +4,9 @@ import config from './config/index.js';
 import incomesRouter from './routes/incomes.js';
 import expensesRouter from './routes/expenses.js';
 import summaryRouter from './routes/summary.js';
-import authRouter from './routes/auth.js'; // Импорт роутов авторизации
-import { authenticate } from './middleware/authMiddleware.js'; // Импорт middleware
+import authRouter from './routes/auth.js';
+import adminRouter from './routes/admin.js'; // Импорт роутов админ-панели
+import { authenticate } from './middleware/authMiddleware.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Создаём Express-приложение
@@ -28,6 +29,9 @@ app.get('/api/v1/health', (req, res) => {
 
 // Публичные роуты (авторизация не требуется)
 app.use('/api/v1/auth', authRouter);
+
+// Админ-панель: защита (authenticate + requireAdmin) встроена внутрь роутера
+app.use('/api/v1/admin', adminRouter);
 
 // Защищённые роуты (требуется валидный JWT токен)
 app.use('/api/v1/incomes', authenticate, incomesRouter);

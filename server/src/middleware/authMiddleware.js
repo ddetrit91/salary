@@ -1,11 +1,16 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
+import db from '../db/connection.js';
+import { touchLastActivity, logActivity } from '../services/userService.js';
 
 // Секретный ключ должен совпадать с тем, что в userService.js
 const JWT_SECRET = config.jwtSecret || 'super-secret-dev-key-change-me-in-production';
 
 /**
- * Middleware для проверки авторизации пользователя
+ * Middleware для проверки авторизации пользователя.
+ * ВАЖНО: существование пользователя и его роль проверяются ПО БАЗЕ ДАННЫХ,
+ * а не только по токену. Это защищает от устаревших токенов
+ * (после удаления пользователя или смены его роли).
  */
 export const authenticate = (req, res, next) => {
   try {
@@ -19,16 +24,27 @@ export const authenticate = (req, res, next) => {
       throw error;
     }
 
-    // Извлекаем сам токен (убираем префикс "Bearer ")
+    // Извлекаем и декодируем токен
     const token = authHeader.split(' ')[1];
-    
-    // Проверяем и декодируем токен
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Сохраняем ID пользователя в объект запроса, чтобы сервисы могли его использовать
-    req.userId = decoded.userId;
-    
-    // Передаём управление следующему middleware или контроллеру
+    // Проверяем пользователя в базе: если он удалён — токен недействителен
+    const user = db.prepare('SELECT id, username, role FROM users WHERE id = ?').get(decoded.userId);
+    if (!user) {
+      const error = new Error('Пользователь не найден. Обратитесь к администратору.');
+      error.statusCode = 401;
+      error.errorCode = 'USER_NOT_FOUND';
+      throw error;
+    }
+
+    // Сохраняем данные пользователя в объект запроса
+    req.userId = user.id;
+    req.user = { id: user.id, username: user.username, role: user.role || 'user' };
+
+    // Обновляем время последней активности и пишем посещение в журнал
+    touchLastActivity(user.id);
+    logActivity(user.id, req.method, req.originalUrl, req.ip);
+
     next();
   } catch (error) {
     // Обработка специфичных ошибок JWT
