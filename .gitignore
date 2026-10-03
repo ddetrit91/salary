@@ -13,6 +13,23 @@ dist/
 dist-ssr/
 .vite/
 *.local
+.vercel/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.development
+!.env.production
+!client/.env.development
+!client/.env.production
+
+# Local SQLite databases
+server/data/*.sqlite
+server/data/*.sqlite-shm
+server/data/*.sqlite-wal
+*.sqlite
+*.sqlite-*
 
 # Editor directories and files
 .vscode/*

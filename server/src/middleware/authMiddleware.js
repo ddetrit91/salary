@@ -12,7 +12,7 @@ const JWT_SECRET = config.jwtSecret || 'super-secret-dev-key-change-me-in-produc
  * а не только по токену. Это защищает от устаревших токенов
  * (после удаления пользователя или смены его роли).
  */
-export const authenticate = (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     // Получаем токен из заголовка Authorization (формат: "Bearer <token>")
     const authHeader = req.headers.authorization;
@@ -29,7 +29,7 @@ export const authenticate = (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     // Проверяем пользователя в базе: если он удалён — токен недействителен
-    const user = db.prepare('SELECT id, username, role FROM users WHERE id = ?').get(decoded.userId);
+    const user = await db.get('SELECT id, username, role FROM users WHERE id = ?', [decoded.userId]);
     if (!user) {
       const error = new Error('Пользователь не найден. Обратитесь к администратору.');
       error.statusCode = 401;
@@ -41,7 +41,7 @@ export const authenticate = (req, res, next) => {
     req.userId = user.id;
     req.user = { id: user.id, username: user.username, role: user.role || 'user' };
 
-    // Обновляем время последней активности и пишем посещение в журнал
+    // Обновляем время последней активности и пишем посещение в журнал (фоново)
     touchLastActivity(user.id);
     logActivity(user.id, req.method, req.originalUrl, req.ip);
 
@@ -61,3 +61,5 @@ export const authenticate = (req, res, next) => {
     next(error);
   }
 };
+
+export default authenticate;

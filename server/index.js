@@ -1,20 +1,26 @@
 import app from './src/app.js';
 import config from './src/config/index.js';
-import { initUsersTable } from './src/services/userService.js';
+import { initDatabase } from './src/db/init.js';
 
-// Инициализируем таблицу пользователей при старте сервера
-initUsersTable();
-console.log('✅ Таблица пользователей инициализирована');
+const startServer = async () => {
+  try {
+    // Инициализируем базу данных перед запуском сервера
+    await initDatabase();
 
-// Запускаем сервер на указанном порту
-const PORT = config.port;
+    const PORT = config.port;
+    app.listen(PORT, () => {
+      console.log(`\n🚀 Сервер Salary Tracker запущен!`);
+      console.log(`📍 Адрес: http://localhost:${PORT}`);
+      console.log(`🔗 API: http://localhost:${PORT}/api/v1`);
+      console.log(`💚 Health check: http://localhost:${PORT}/api/v1/health\n`);
+    });
+  } catch (error) {
+    console.error('❌ Ошибка запуска сервера:', error);
+    process.exit(1);
+  }
+};
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 Сервер Salary Tracker запущен!`);
-  console.log(`📍 Адрес: http://localhost:${PORT}`);
-  console.log(`🔗 API: http://localhost:${PORT}/api/v1`);
-  console.log(`💚 Health check: http://localhost:${PORT}/api/v1/health\n`);
-});
+startServer();
 
 // Обработка необработанных исключений
 process.on('uncaughtException', (error) => {

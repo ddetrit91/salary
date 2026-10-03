@@ -4,9 +4,9 @@ import * as adminService from '../services/adminService.js';
  * GET /api/v1/admin/users
  * Список всех пользователей
  */
-export const getUsers = (req, res, next) => {
+export const getUsers = async (req, res, next) => {
   try {
-    const data = adminService.getUsers();
+    const data = await adminService.getUsers();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -32,10 +32,9 @@ export const createUser = async (req, res, next) => {
  * DELETE /api/v1/admin/users/:id
  * Удаление пользователя (с защитами от удаления себя и последнего админа)
  */
-export const deleteUser = (req, res, next) => {
+export const deleteUser = async (req, res, next) => {
   try {
-    // req.userId добавлен middleware authenticate (ID текущего админа)
-    adminService.deleteUser(req.params.id, req.userId);
+    await adminService.deleteUser(req.params.id, req.userId);
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -47,10 +46,10 @@ export const deleteUser = (req, res, next) => {
  * Смена роли пользователя
  * Body: { role }
  */
-export const updateUserRole = (req, res, next) => {
+export const updateUserRole = async (req, res, next) => {
   try {
     const { role } = req.body;
-    const data = adminService.updateUserRole(req.params.id, role, req.userId);
+    const data = await adminService.updateUserRole(req.params.id, role, req.userId);
     res.json({ data });
   } catch (error) {
     next(error);
@@ -76,9 +75,9 @@ export const resetUserPassword = async (req, res, next) => {
  * GET /api/v1/admin/stats
  * Общая системная статистика
  */
-export const getSystemStats = (req, res, next) => {
+export const getSystemStats = async (req, res, next) => {
   try {
-    const data = adminService.getSystemStats();
+    const data = await adminService.getSystemStats();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -89,9 +88,9 @@ export const getSystemStats = (req, res, next) => {
  * GET /api/v1/admin/activity
  * Статистика активности и последние события
  */
-export const getActivityStats = (req, res, next) => {
+export const getActivityStats = async (req, res, next) => {
   try {
-    const data = adminService.getActivityStats();
+    const data = await adminService.getActivityStats();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -102,9 +101,9 @@ export const getActivityStats = (req, res, next) => {
  * GET /api/v1/admin/settings
  * Системные настройки
  */
-export const getSettings = (req, res, next) => {
+export const getSettings = async (req, res, next) => {
   try {
-    const data = adminService.getSettings();
+    const data = await adminService.getSettings();
     res.json({ data });
   } catch (error) {
     next(error);
@@ -116,10 +115,10 @@ export const getSettings = (req, res, next) => {
  * Обновление системных настроек
  * Body: { allowRegistration }
  */
-export const updateSettings = (req, res, next) => {
+export const updateSettings = async (req, res, next) => {
   try {
     const { allowRegistration } = req.body;
-    const data = adminService.updateSettings({ allowRegistration });
+    const data = await adminService.updateSettings({ allowRegistration });
     res.json({ data });
   } catch (error) {
     next(error);

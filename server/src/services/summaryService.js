@@ -29,12 +29,18 @@ const getLabel = (categoryId) => CATEGORY_LABELS[categoryId] || categoryId;
 /**
  * Получает общий баланс текущего пользователя
  */
-export const getBalance = (userId) => {
-  const totalIncomeRow = db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM incomes WHERE user_id = ?').get(userId);
-  const totalExpenseRow = db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE user_id = ?').get(userId);
+export const getBalance = async (userId) => {
+  const totalIncomeRow = await db.get(
+    'SELECT COALESCE(SUM(amount), 0) as total FROM incomes WHERE user_id = ?',
+    [userId]
+  );
+  const totalExpenseRow = await db.get(
+    'SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE user_id = ?',
+    [userId]
+  );
 
-  const totalIncome = totalIncomeRow.total;
-  const totalExpense = totalExpenseRow.total;
+  const totalIncome = totalIncomeRow ? Number(totalIncomeRow.total) : 0;
+  const totalExpense = totalExpenseRow ? Number(totalExpenseRow.total) : 0;
   
   return {
     totalIncome,
@@ -46,24 +52,24 @@ export const getBalance = (userId) => {
 /**
  * Получает суммы по категориям для текущего пользователя (с русскими названиями)
  */
-export const getByCategory = (userId, type = 'expense') => {
+export const getByCategory = async (userId, type = 'expense') => {
   const tableName = type === 'income' ? 'incomes' : 'expenses';
   
-  const rows = db.prepare(`
+  const rows = await db.all(`
     SELECT category, SUM(amount) as total, COUNT(*) as count 
     FROM ${tableName} 
     WHERE user_id = ? 
     GROUP BY category 
     ORDER BY total DESC
-  `).all(userId);
+  `, [userId]);
 
   // Палитра цветов для графиков
   const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#E91E63', '#00BCD4', '#FFEB3B', '#795548', '#607D8B', '#F44336'];
   
   return rows.map((row, index) => ({
-    name: getLabel(row.category), // <-- Русское название вместо ID
-    value: row.total,
-    count: row.count,
+    name: getLabel(row.category),
+    value: Number(row.total),
+    count: Number(row.count),
     color: colors[index % colors.length],
   }));
 };
@@ -71,8 +77,8 @@ export const getByCategory = (userId, type = 'expense') => {
 /**
  * Получает ежемесячную сводку доходов и расходов текущего пользователя
  */
-export const getMonthlySummary = (userId) => {
-  const rows = db.prepare(`
+export const getMonthlySummary = async (userId) => {
+  const rows = await db.all(`
     SELECT 
       strftime('%Y-%m', date) as month,
       COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
@@ -84,7 +90,11 @@ export const getMonthlySummary = (userId) => {
     )
     GROUP BY month
     ORDER BY month ASC
-  `).all(userId, userId);
+  `, [userId, userId]);
 
-  return rows;
+  return rows.map((r) => ({
+    month: r.month,
+    income: Number(r.income),
+    expense: Number(r.expense),
+  }));
 };
