@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { createClient } from '@libsql/client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -7,23 +7,71 @@ import config from '../config/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Убеждаемся, что папка для базы данных существует
-const dbDir = path.dirname(config.dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+// Если используется локальный файл SQLite, убеждаемся, что директория существует
+if (config.turso.url.startsWith('file:')) {
+  const filePath = config.turso.url.replace(/^file:/, '');
+  const dbDir = path.dirname(filePath);
+  if (!fs.existsSync(dbDir)) {
+    try {
+      fs.mkdirSync(dbDir, { recursive: true });
+    } catch (e) {
+      // Игнорируем ошибки создания директории в read-only окружениях
+    }
+  }
 }
 
-// Создаём подключение к SQLite (файл будет создан автоматически, если не существует)
-const db = new Database(config.dbPath);
+// Создаём клиент libSQL (работает и с Turso облаком, и с локальным файлом)
+export const client = createClient({
+  url: config.turso.url,
+  authToken: config.turso.authToken,
+});
 
-// Включаем режим WAL для лучшей производительности при одновременных чтениях/записях
-db.pragma('journal_mode = WAL');
+/**
+ * Обертка с удобным промис-ориентированным API
+ */
+export const db = {
+  client,
 
-// Применяем SQL-схему: создаём таблицы и индексы, если их ещё нет
-const schemaPath = path.join(__dirname, 'schema.sql');
-const schema = fs.readFileSync(schemaPath, 'utf-8');
-db.exec(schema);
+  /**
+   * Получить одну строку или null
+   */
+  get: async (sql, args = []) => {
+    const res = await client.execute({ sql, args });
+    return res.rows.length > 0 ? res.rows[0] : null;
+  },
 
-console.log('✅ База данных инициализирована:', config.dbPath);
+  /**
+   * Получить массив строк
+   */
+  all: async (sql, args = []) => {
+    const res = await client.execute({ sql, args });
+    return res.rows;
+  },
+
+  /**
+   * Выполнить INSERT / UPDATE / DELETE
+   */
+  run: async (sql, args = []) => {
+    const res = await client.execute({ sql, args });
+    return {
+      changes: res.rowsAffected,
+      lastInsertRowid: res.lastInsertRowid,
+    };
+  },
+
+  /**
+   * Выполнить несколько SQL инструкций (например, схему)
+   */
+  exec: async (sql) => {
+    return client.executeMultiple(sql);
+  },
+
+  /**
+   * Пакетное атомарное выполнение нескольких запросов
+   */
+  batch: async (statements, mode = 'write') => {
+    return client.batch(statements, mode);
+  },
+};
 
 export default db;
