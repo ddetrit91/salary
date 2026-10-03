@@ -50,4 +50,30 @@
   padding: var(--spacing-lg);
   border: 2px dashed var(--color-border);
   border-radius: var(--border-radius);
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ АНАЛИТИКИ ========== */
+@media (max-width: 768px) {
+  .title {
+    font-size: 22px;
+  }
+
+  /* Графики — строго в одну колонку, без вылезания за экран */
+  .chartsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .chartContainer {
+    min-height: 320px;
+    padding: 16px;
+  }
+
+  .chartTitle {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .chartPlaceholder {
+    padding: 16px;
+    font-size: 14px;
+  }
 }

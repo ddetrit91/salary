@@ -151,4 +151,67 @@
 
 [data-theme='dark'] .themeToggle:hover {
   background-color: #334155;
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ШАПКИ ========== */
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;   /* разрешаем перенос в два ряда */
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  /* Навигация уезжает на второй ряд и скроллится горизонтально */
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;          /* Firefox */
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;                  /* Chrome, Safari */
+  }
+
+  .navButton {
+    padding: 8px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* Блок пользователя прижимается вправо первого ряда */
+  .userInfo {
+    margin-left: auto;
+    gap: 8px;
+  }
+
+  /* Имя пользователя сокращается многоточием, если длинное */
+  .username {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .logoutButton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .themeToggle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+/* На совсем узких экранах оставляем только кнопки */
+@media (max-width: 480px) {
+  .username {
+    display: none;
+  }
 }

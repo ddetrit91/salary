@@ -192,4 +192,31 @@
 
 [data-theme='dark'] .switchButton:hover:not(:disabled) {
   color: #3b82f6;
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ СТРАНИЦЫ ВХОДА ========== */
+@media (max-width: 480px) {
+  .authContainer {
+    padding: 12px;
+  }
+
+  .authCard {
+    padding: 28px 20px;
+    border-radius: 12px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .submitButton {
+    padding: 12px;
+    font-size: 15px;
+  }
 }
