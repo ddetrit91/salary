@@ -4,6 +4,7 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import History from './pages/History/History';
 import Analytics from './pages/Analytics/Analytics';
+import Admin from './pages/Admin/Admin'; // Импорт страницы админ-панели
 import Auth from './pages/Auth/Auth';
 import { getCurrentUser, logout } from './services/authService';
 
@@ -46,13 +47,15 @@ function App() {
         return <History />;
       case 'analytics':
         return <Analytics />;
+      case 'admin':
+        return <Admin />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <Layout 
+    <Layout
       currentPage={currentPage}
       onNavigate={setCurrentPage}
       user={user}

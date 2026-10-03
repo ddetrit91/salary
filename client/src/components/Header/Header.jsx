@@ -1,11 +1,18 @@
 import styles from './Header.module.css';
 
 function Header({ currentPage, onNavigate, user, onLogout }) {
+  // Базовые пункты навигации для всех пользователей
   const navItems = [
     { id: 'dashboard', label: 'Главная' },
     { id: 'history', label: 'История' },
     { id: 'analytics', label: 'Аналитика' },
   ];
+
+  // Пункт «Админ» добавляется ТОЛЬКО для роли admin.
+  // Это косметика для интерфейса: настоящая проверка роли — на бэкенде.
+  if (user?.role === 'admin') {
+    navItems.push({ id: 'admin', label: '⚙️ Админ' });
+  }
 
   return (
     <header className={styles.header}>
@@ -28,6 +35,11 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
       <div className={styles.userInfo}>
         <span className={styles.username}>
           👤 {user?.username || 'Пользователь'}
+          {user?.role === 'admin' && (
+            <span className={styles.adminBadge} title="Администратор">
+              ★
+            </span>
+          )}
         </span>
         <button 
           className={styles.logoutButton}

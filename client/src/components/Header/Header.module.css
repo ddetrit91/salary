@@ -71,4 +71,9 @@
 .logoutButton:hover {
   background-color: #ffe3e3;
   border-color: #ffa8a8;
+}.adminBadge {
+  display: inline-block;
+  margin-left: 6px;
+  color: #7c3aed;
+  font-size: 12px;
 }
