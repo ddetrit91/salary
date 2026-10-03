@@ -487,4 +487,83 @@
 
 [data-theme='dark'] .barValue {
   color: #cbd5e1;
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ АДМИН-ПАНЕЛИ ========== */
+@media (max-width: 768px) {
+  .title {
+    font-size: 22px;
+  }
+
+  /* Вкладки — горизонтальный скролл, как навигация в шапке */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* Форма создания пользователя — столбиком на всю ширину */
+  .formRow {
+    flex-direction: column;
+  }
+
+  .input,
+  .select,
+  .button {
+    width: 100%;
+  }
+
+  /* Строки таблиц — карточками в одну колонку */
+  .tableRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 12px 16px;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  /* Настройки — столбиком */
+  .settingsRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* События журнала — с переносом */
+  .eventItem {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .eventTime {
+    min-width: 100%;
+  }
+
+  /* Карточки статистики — по две в ряд */
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* На совсем узких экранах статистика в одну колонку */
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -93,4 +93,34 @@
 
 [data-theme='dark'] .addButton:hover {
   background-color: #3651d4;
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ИСТОРИИ ========== */
+@media (max-width: 768px) {
+  .title {
+    font-size: 22px;
+  }
+
+  /* Фильтры — столбиком, каждый на всю ширину */
+  .filters {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .filterGroup {
+    min-width: 100%;
+  }
+
+  .filterInput,
+  .filterSelect {
+    width: 100%;
+  }
+
+  /* Плавающая кнопка «+» — компактнее */
+  .addButton {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    bottom: 16px;
+    right: 16px;
+  }
 }

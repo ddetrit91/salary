@@ -59,4 +59,29 @@
 
 [data-theme='dark'] .addButton:hover {
   background-color: #3651d4;
+}/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ГЛАВНОЙ ========== */
+@media (max-width: 768px) {
+  .title {
+    font-size: 22px;
+  }
+
+  /* Карточки баланса — в одну колонку */
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .recentTitle {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Плавающая кнопка «+» — компактнее и ближе к краю */
+  .addButton {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    bottom: 16px;
+    right: 16px;
+  }
 }
