@@ -44,7 +44,7 @@ export const formatDateWithMonth = (dateString) => {
  * @returns {string} отформатированная сумма
  */
 export const formatCurrency = (amount, showSign = false, type = '') => {
-  if (amount === null || amount === undefined) return '0 ₽';
+  if (amount === null || amount === undefined) return '0 сум';
   
   const formatted = amount.toLocaleString('ru-RU', {
     minimumFractionDigits: 0,
@@ -60,7 +60,7 @@ export const formatCurrency = (amount, showSign = false, type = '') => {
     }
   }
   
-  return `${sign}${formatted} ₽`;
+  return `${sign}${formatted} сум`;
 };
 
 /**

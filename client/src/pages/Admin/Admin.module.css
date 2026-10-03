@@ -364,4 +364,127 @@
   .actions {
     justify-content: flex-start;
   }
+}/* ========== ТЁМНАЯ ТЕМА для админ-панели ========== */
+/* Применяется только когда на <html> стоит data-theme="dark".
+   Светлая тема выше остаётся нетронутой. */
+
+[data-theme='dark'] .title {
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .tab {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .tab:hover {
+  background-color: #273449;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .sectionTitle {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .error {
+  background-color: #3f1d1d;
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+
+[data-theme='dark'] .form,
+[data-theme='dark'] .table,
+[data-theme='dark'] .eventList,
+[data-theme='dark'] .statCard,
+[data-theme='dark'] .barList,
+[data-theme='dark'] .settingsRow {
+  background-color: #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .input,
+[data-theme='dark'] .select {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .input:focus,
+[data-theme='dark'] .select:focus {
+  border-color: #60a5fa;
+}
+
+[data-theme='dark'] .tableHeader {
+  background-color: #273449;
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .tableRow {
+  border-top-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .tableRow:hover {
+  background-color: #273449;
+}
+
+[data-theme='dark'] .cellBold {
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .badgeAdmin {
+  background-color: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+[data-theme='dark'] .badgeUser {
+  background-color: #273449;
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .smallButton {
+  background-color: #273449;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+[data-theme='dark'] .smallButton:hover {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .dangerButton {
+  background-color: #3f1d1d;
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+
+[data-theme='dark'] .eventItem {
+  border-top-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .eventTime,
+[data-theme='dark'] .eventPath,
+[data-theme='dark'] .barLabel,
+[data-theme='dark'] .statLabel,
+[data-theme='dark'] .settingsHint {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .eventMethod {
+  background-color: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .statValue {
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .barTrack {
+  background-color: #273449;
+}
+
+[data-theme='dark'] .barValue {
+  color: #cbd5e1;
 }

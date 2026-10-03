@@ -296,11 +296,11 @@ function Admin() {
             </div>
             <div className={styles.statCard}>
               <div className={styles.statValue}>{stats.incomesCount}</div>
-              <div className={styles.statLabel}>Доходов ({stats.incomesTotal.toLocaleString('ru-RU')} ₽)</div>
+              <div className={styles.statLabel}>Доходов ({stats.incomesTotal.toLocaleString('ru-RU')} сум)</div>
             </div>
             <div className={styles.statCard}>
               <div className={styles.statValue}>{stats.expensesCount}</div>
-              <div className={styles.statLabel}>Расходов ({stats.expensesTotal.toLocaleString('ru-RU')} ₽)</div>
+              <div className={styles.statLabel}>Расходов ({stats.expensesTotal.toLocaleString('ru-RU')} сум)</div>
             </div>
           </div>
 
