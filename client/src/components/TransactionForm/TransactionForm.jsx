@@ -134,7 +134,7 @@ function TransactionForm({ onSubmit, onCancel, editData }) {
       {/* Сумма и дата в одну строку */}
       <div className={styles.row}>
         <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Сумма (₽)</label>
+          <label className={styles.fieldLabel}>Сумма (сум)</label>
           <input
             type="number"
             className={styles.fieldInput}

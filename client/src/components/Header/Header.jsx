@@ -1,6 +1,10 @@
 import styles from './Header.module.css';
+import { useTheme } from '../../context/ThemeContext.jsx';
 
 function Header({ currentPage, onNavigate, user, onLogout }) {
+  // Получаем тему и функцию переключения
+  const { theme, toggleTheme } = useTheme();
+
   // Базовые пункты навигации для всех пользователей
   const navItems = [
     { id: 'dashboard', label: 'Главная' },
@@ -41,6 +45,16 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
             </span>
           )}
         </span>
+
+        {/* Кнопка переключения темы */}
+        <button
+          className={styles.themeToggle}
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
         <button 
           className={styles.logoutButton}
           onClick={onLogout}

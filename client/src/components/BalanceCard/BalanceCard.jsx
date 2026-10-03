@@ -13,7 +13,7 @@ function BalanceCard({ title, amount, type = 'balance' }) {
   return (
     <div className={`${styles.card} ${typeClass}`}>
       <h3 className={styles.title}>{title}</h3>
-      <p className={styles.amount}>{formattedAmount} ₽</p>
+      <p className={styles.amount}>{formattedAmount} сум</p>
     </div>
   );
 }

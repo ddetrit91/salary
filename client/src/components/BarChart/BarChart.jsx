@@ -24,7 +24,7 @@ function BarChart({ data = [], title = 'Статистика' }) {
               <span className={styles.tooltipDot} style={{ backgroundColor: entry.color }} />
               <span className={styles.tooltipLabel}>{entry.name}:</span>
               <span className={styles.tooltipValue} style={{ color: entry.color }}>
-                {entry.value.toLocaleString('ru-RU')} ₽
+                {entry.value.toLocaleString('ru-RU')} сум
               </span>
             </div>
           ))}
@@ -62,7 +62,7 @@ function BarChart({ data = [], title = 'Статистика' }) {
           />
           <YAxis 
             tick={{ fontSize: 12, fill: '#6c757d' }}
-            tickFormatter={(value) => `${value}₽`}
+            tickFormatter={(value) => `${value}сум`}
           />
           <Tooltip content={renderTooltip} />
           <Legend content={renderLegend} />

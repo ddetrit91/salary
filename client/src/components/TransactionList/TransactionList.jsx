@@ -107,7 +107,7 @@ function TransactionList({ transactions = [], onEdit, onDelete }) {
 
             <div className={`${styles.amount} ${transaction.type === 'income' ? styles.income : styles.expense}`}>
               {transaction.type === 'income' ? '+' : '−'}
-              {(transaction.amount ?? 0).toLocaleString('ru-RU')} ₽
+              {(transaction.amount ?? 0).toLocaleString('ru-RU')} сум
             </div>
 
             <div className={styles.actions}>

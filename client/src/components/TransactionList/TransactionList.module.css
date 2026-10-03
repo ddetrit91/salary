@@ -8,7 +8,7 @@
 /* Заголовок таблицы */
 .header {
   display: grid;
-  grid-template-columns: 120px 1fr 150px 100px;
+  grid-template-columns: 120px 1fr 190px 100px;
   gap: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-bg);
@@ -66,6 +66,7 @@
   font-weight: 700;
   font-size: var(--font-size-lg);
   text-align: right;
+  white-space: nowrap; /* сумма и валюта всегда в одну строку */
 }
 
 /* Цветовая индикация для доходов */

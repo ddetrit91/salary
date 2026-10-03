@@ -26,7 +26,7 @@ function PieChart({ data = [], title = 'Распределение' }) {
       return (
         <div className={styles.tooltip}>
           <p className={styles.tooltipLabel}>{data.name}</p>
-          <p className={styles.tooltipValue}>{data.value.toLocaleString('ru-RU')} ₽</p>
+          <p className={styles.tooltipValue}>{data.value.toLocaleString('ru-RU')} сум</p>
         </div>
       );
     }
