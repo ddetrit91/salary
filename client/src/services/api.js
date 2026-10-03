@@ -1,10 +1,10 @@
 import { logout } from './authService.js';
 
-// В production на Vercel запросы идут по относительному пути (тот же домен),
-// а в режиме разработки по умолчанию используется http://localhost:3001
-const BASE_URL = import.meta.env.VITE_API_URL !== undefined
-  ? import.meta.env.VITE_API_URL
-  : (import.meta.env.DEV ? 'http://localhost:3001' : '');
+// В режиме разработки (DEV) используем localhost:3001,
+// а в production на Vercel запросы идут строго по относительному пути /api/v1
+const BASE_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:3001')
+  : (import.meta.env.VITE_API_URL || '');
 const API_BASE_URL = `${BASE_URL}/api/v1`;
 
 /**
