@@ -67,4 +67,5 @@ export const api = {
   post: (path, body) => apiRequest(path, { method: 'POST', body: JSON.stringify(body) }),
   put: (path, body) => apiRequest(path, { method: 'PUT', body: JSON.stringify(body) }),
   del: (path) => apiRequest(path, { method: 'DELETE' }),
+  delete: (path) => apiRequest(path, { method: 'DELETE' }),  // синоним del — для единообразия вызовов
 };
