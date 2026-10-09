@@ -5,7 +5,7 @@ import Header from '../Header/Header';
  * Layout рисует шапку на всю ширину,
  * а контент страниц оборачивает в центрированный контейнер.
  */
-function Layout({ children, currentPage, onNavigate, user, onLogout }) {
+function Layout({ children, currentPage, onNavigate, user, onLogout, onStartTour }) {
   return (
     <div className={styles.layout}>
       {/* Шапка на всю ширину экрана */}
@@ -14,6 +14,7 @@ function Layout({ children, currentPage, onNavigate, user, onLogout }) {
         onNavigate={onNavigate} 
         user={user} 
         onLogout={onLogout} 
+        onStartTour={onStartTour}
       />
       
       {/* Центрированный контейнер для контента страниц */}
