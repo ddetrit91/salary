@@ -6,8 +6,10 @@ import TransactionForm from '../../components/TransactionForm/TransactionForm';
 import { getIncomes, addIncome, updateIncome, deleteIncome } from '../../services/incomeService';
 import { getExpenses, addExpense, updateExpense, deleteExpense } from '../../services/expenseService';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../../utils/constants';
+import { useToast } from '../../components/Toast/ToastContext';
 
 function History() {
+  const toast = useToast();
   // Состояния для фильтров
   const [typeFilter, setTypeFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -38,7 +40,7 @@ function History() {
       setAllTransactions(combined);
     } catch (err) {
       console.error('Ошибка загрузки истории:', err);
-      alert('Не удалось загрузить историю операций');
+      toast.error('Не удалось загрузить историю операций');
     } finally {
       setLoading(false);
     }
@@ -113,9 +115,10 @@ function History() {
         await deleteExpense(id);
       }
       await loadData(); // Перезагружаем данные после успешного удаления
+      toast.success('Операция удалена');
     } catch (err) {
       console.error('Ошибка при удалении:', err);
-      alert('Не удалось удалить операцию');
+      toast.error('Не удалось удалить операцию');
     }
   };
 
@@ -129,6 +132,7 @@ function History() {
         } else {
           await updateExpense(editingTransaction.id, data);
         }
+        toast.success('Операция обновлена');
       } else {
         // Режим добавления
         if (data.type === 'income') {
@@ -136,13 +140,14 @@ function History() {
         } else {
           await addExpense(data);
         }
+        toast.success('Операция добавлена');
       }
 
       await loadData(); // Перезагружаем данные после сохранения
       handleCloseModal();
     } catch (err) {
       console.error('Ошибка при сохранении:', err);
-      alert('Не удалось сохранить операцию. Проверьте данные.');
+      toast.error('Не удалось сохранить операцию. Проверьте данные.');
     }
   };
 

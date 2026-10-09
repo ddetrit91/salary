@@ -8,8 +8,10 @@ import TransactionForm from '../../components/TransactionForm/TransactionForm';
 import { getBalance, getRecentTransactions } from '../../services/summaryService';
 import { addIncome } from '../../services/incomeService';
 import { addExpense } from '../../services/expenseService';
+import { useToast } from '../../components/Toast/ToastContext';
 
 function Dashboard() {
+  const toast = useToast();
   // Состояния для данных
   const [balance, setBalance] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -65,9 +67,10 @@ function Dashboard() {
       // Перезагружаем данные после добавления
       await loadData();
       handleCloseModal();
+      toast.success('Операция успешно добавлена');
     } catch (err) {
       console.error('Ошибка при добавлении операции:', err);
-      alert('Не удалось добавить операцию. Попробуйте ещё раз.');
+      toast.error('Не удалось добавить операцию. Попробуйте ещё раз.');
     }
   };
 
