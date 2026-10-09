@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import styles from './Admin.module.css';
 import * as adminService from '../../services/adminService';
 import { getCurrentUser } from '../../services/authService';
+import { useToast } from '../../components/Toast/ToastContext';
 
 function Admin() {
   const currentUser = getCurrentUser();
+  const toast = useToast();
 
   // Активная вкладка
   const [activeTab, setActiveTab] = useState('users');
@@ -74,8 +76,9 @@ function Admin() {
       setNewPassword('');
       setNewRole('user');
       setUsers(await adminService.getUsers());
+      toast.success('Пользователь создан');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Не удалось создать пользователя');
     }
   };
 
@@ -85,8 +88,9 @@ function Admin() {
     try {
       await adminService.deleteUser(user.id);
       setUsers(await adminService.getUsers());
+      toast.success('Пользователь удалён');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Не удалось удалить пользователя');
     }
   };
 
@@ -96,8 +100,9 @@ function Admin() {
     try {
       await adminService.updateUserRole(user.id, nextRole);
       setUsers(await adminService.getUsers());
+      toast.success(`Роль изменена на «${nextRole === 'admin' ? 'Админ' : 'Пользователь'}»`);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Не удалось изменить роль');
     }
   };
 
@@ -107,9 +112,9 @@ function Admin() {
     if (!password) return;
     try {
       await adminService.resetUserPassword(user.id, password);
-      alert('Пароль обновлён.');
+      toast.success('Пароль обновлён');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Не удалось обновить пароль');
     }
   };
 
@@ -118,8 +123,11 @@ function Admin() {
     try {
       const updated = await adminService.updateSettings(!settings.allowRegistration);
       setSettings(updated);
+      toast.success(
+        updated.allowRegistration ? 'Регистрация включена' : 'Регистрация отключена',
+      );
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Не удалось изменить настройку');
     }
   };
 
@@ -200,6 +208,7 @@ function Admin() {
               <div>Пользователь</div>
               <div>Роль</div>
               <div>Операций</div>
+              <div>IP</div>
               <div>Регистрация</div>
               <div>Последняя активность</div>
               <div style={{ textAlign: 'right' }}>Действия</div>
@@ -216,6 +225,18 @@ function Admin() {
                   </span>
                 </div>
                 <div>{(user.incomesCount ?? 0) + (user.expensesCount ?? 0)}</div>
+                <div 
+                  className={styles.ipCell} 
+                  title={user.lastIp ? 'Нажмите, чтобы скопировать' : 'IP ещё не зафиксирован'}
+                  onClick={() => {
+                    if (user.lastIp) {
+                      navigator.clipboard?.writeText(user.lastIp);
+                    }
+                  }}
+                  style={{ cursor: user.lastIp ? 'pointer' : 'default' }}
+                >
+                  {user.lastIp || '—'}
+                </div>
                 <div>{formatDateTime(user.createdAt)}</div>
                 <div>{formatDateTime(user.lastActivity)}</div>
                 <div className={styles.actions}>

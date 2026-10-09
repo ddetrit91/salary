@@ -126,7 +126,7 @@
 .tableHeader,
 .tableRow {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 0.8fr 1.2fr 1.4fr 2fr;
+  grid-template-columns: 1.5fr 1fr 0.8fr 0.9fr 1.2fr 1.4fr 2fr;
   gap: 12px;
   padding: 12px 20px;
   align-items: center;
@@ -565,5 +565,34 @@
   /* На совсем узких экранах статистика в одну колонку */
   .cardGrid {
     grid-template-columns: 1fr;
+  }
+}/* Ячейка с IP-адресом: моноширинный шрифт, при клике копируется */
+.ipCell {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.ipCell:hover {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+/* На узких экранах — горизонтальный скролл таблицы, чтобы все колонки влезли */
+@media (max-width: 900px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tableHeader,
+  .tableRow {
+    min-width: 800px;
   }
 }

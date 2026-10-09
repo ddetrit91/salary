@@ -1,7 +1,26 @@
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart as RechartsBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import styles from './BarChart.module.css';
+import { useTheme } from '../../context/ThemeContext';
 
-function BarChart({ data = [], title = 'Статистика' }) {
+function BarChart({ data = [] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  // Цвета, адаптированные под текущую тему
+  const axisColor = isDark ? '#94a3b8' : '#6c757d';
+  const gridColor = isDark ? '#334155' : '#e9ecef';
+  const incomeColor = isDark ? '#4ade80' : '#2ecc71';
+  const expenseColor = isDark ? '#f87171' : '#e74c3c';
+
   // Если данных нет — показываем заглушку
   if (!data || data.length === 0) {
     return (
@@ -12,6 +31,13 @@ function BarChart({ data = [], title = 'Статистика' }) {
       </div>
     );
   }
+
+  // Компактный формат чисел для оси Y: 3 млн, 500 тыс
+  const formatAxis = (value) => {
+    if (value >= 1000000) return `${(value / 1000000).toLocaleString('ru-RU')} млн`;
+    if (value >= 1000) return `${(value / 1000).toLocaleString('ru-RU')} тыс`;
+    return `${value}`;
+  };
 
   // Форматирование значения в tooltip
   const renderTooltip = ({ active, payload, label }) => {
@@ -41,8 +67,8 @@ function BarChart({ data = [], title = 'Статистика' }) {
       <ul className={styles.legend}>
         {payload.map((entry, index) => (
           <li key={`legend-${index}`} className={styles.legendItem}>
-            <span 
-              className={styles.legendDot} 
+            <span
+              className={styles.legendDot}
               style={{ backgroundColor: entry.color }}
             />
             <span className={styles.legendText}>{entry.value}</span>
@@ -56,27 +82,40 @@ function BarChart({ data = [], title = 'Статистика' }) {
     <div className={styles.chart}>
       <ResponsiveContainer width="100%" height={300}>
         <RechartsBarChart data={data}>
-          <XAxis 
-            dataKey="month" 
-            tick={{ fontSize: 12, fill: '#6c757d' }}
+          <CartesianGrid
+            stroke={gridColor}
+            strokeDasharray="3 3"
+            vertical={false}
           />
-          <YAxis 
-            tick={{ fontSize: 12, fill: '#6c757d' }}
-            tickFormatter={(value) => `${value}сум`}
+          <XAxis
+            dataKey="month"
+            tick={{ fontSize: 12, fill: axisColor }}
+            axisLine={{ stroke: gridColor }}
+            tickLine={{ stroke: gridColor }}
           />
-          <Tooltip content={renderTooltip} />
+          <YAxis
+            tick={{ fontSize: 12, fill: axisColor }}
+            tickFormatter={formatAxis}
+            axisLine={{ stroke: gridColor }}
+            tickLine={{ stroke: gridColor }}
+          />
+          <Tooltip content={renderTooltip} cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }} />
           <Legend content={renderLegend} />
-          <Bar 
-            dataKey="income" 
-            name="Доходы" 
-            fill="#2ecc71" 
+          <Bar
+            dataKey="income"
+            name="Доходы"
+            fill={incomeColor}
             radius={[4, 4, 0, 0]}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
-          <Bar 
-            dataKey="expense" 
-            name="Расходы" 
-            fill="#e74c3c" 
+          <Bar
+            dataKey="expense"
+            name="Расходы"
+            fill={expenseColor}
             radius={[4, 4, 0, 0]}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </RechartsBarChart>
       </ResponsiveContainer>

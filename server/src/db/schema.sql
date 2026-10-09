@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role          TEXT DEFAULT 'user',
   last_activity TEXT,
+  last_ip       TEXT,
   created_at    TEXT DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -14,13 +14,16 @@
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
     "recharts": "^3.10.1",
-    "salary-tracker": "file:.."
+    "salary-tracker": "file:..",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
-    "vite": "^8.3.0"
+    "sharp": "^0.35.5",
+    "vite": "^8.3.0",
+    "vite-plugin-pwa": "^2.0.0"
   }
 }

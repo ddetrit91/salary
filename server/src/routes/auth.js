@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import * as authController from '../controllers/authController.js';
+import { authRateLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
+
+// Защита от брутфорса и спама
+router.use(authRateLimiter);
 
 /**
  * POST /api/v1/auth/register

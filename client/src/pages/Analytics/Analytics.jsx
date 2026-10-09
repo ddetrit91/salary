@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import styles from './Analytics.module.css';
 import PieChart from '../../components/PieChart/PieChart';
 import BarChart from '../../components/BarChart/BarChart';
+import LineChart from '../../components/LineChart/LineChart';
 import { getByCategory, getMonthlySummary } from '../../services/summaryService';
 
 function Analytics() {
@@ -83,6 +84,12 @@ function Analytics() {
         <div className={styles.chartContainer}>
           <h2 className={styles.chartTitle}>Доходы и расходы по месяцам</h2>
           <BarChart data={monthlyData} title="Доходы и расходы по месяцам" />
+        </div>
+
+        {/* Линейный график накопленного баланса — на всю ширину */}
+        <div className={styles.chartContainer} style={{ gridColumn: '1 / -1' }}>
+          <h2 className={styles.chartTitle}>Баланс по месяцам</h2>
+          <LineChart data={monthlyData} title="Баланс по месяцам" />
         </div>
       </div>
     </div>
