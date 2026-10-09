@@ -41,10 +41,16 @@ export const authenticate = async (req, res, next) => {
     req.userId = user.id;
     req.user = { id: user.id, username: user.username, role: user.role || 'user' };
 
+    // Надёжное определение IP за прокси Vercel/Cloudflare
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const clientIp = forwardedFor
+      ? String(forwardedFor).split(',')[0].trim()
+      : req.ip || null;
+
     // Обновляем активность и IP пользователя (фоново, без await)
     touchLastActivity(user.id);
-    touchLastIp(user.id, req.ip);
-    logActivity(user.id, req.method, req.originalUrl, req.ip);
+    touchLastIp(user.id, clientIp);
+    logActivity(user.id, req.method, req.originalUrl, clientIp);
 
     next();
   } catch (error) {
