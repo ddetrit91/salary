@@ -10,19 +10,9 @@ export const errorHandler = (err, req, res, next) => {
   let errorCode = err.errorCode || 'INTERNAL_ERROR';
   let message = err.message || 'Внутренняя ошибка сервера';
 
-  // Обработка специфичных типов ошибок
-  if (err.name === 'ValidationError') {
-    statusCode = 400;
-    errorCode = 'VALIDATION_ERROR';
-    message = err.message;
-  } else if (err.name === 'NotFoundError') {
-    statusCode = 404;
-    errorCode = 'NOT_FOUND';
-    message = err.message;
-  } else if (err.name === 'UnauthorizedError') {
-    statusCode = 401;
-    errorCode = 'UNAUTHORIZED';
-    message = err.message;
+  // Защита от утечки внутренней информации: при 500 не отдаём стек и детали БД клиенту
+  if (statusCode === 500) {
+    message = 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.';
   }
 
   // Формируем ответ в едином формате

@@ -23,10 +23,31 @@ export const isRegistrationAllowed = async () => {
   return row ? row.value === 'true' : true;
 };
 
+const assertUsername = (username) => {
+  if (!username || typeof username !== 'string' || username.trim().length < 3 || username.trim().length > 50) {
+    const error = new Error('Имя пользователя должно быть строкой от 3 до 50 символов');
+    error.statusCode = 400;
+    error.errorCode = 'VALIDATION_ERROR';
+    throw error;
+  }
+};
+
+const assertPassword = (password) => {
+  if (!password || typeof password !== 'string' || password.length < 6 || password.length > 100) {
+    const error = new Error('Пароль должен быть строкой от 6 до 100 символов');
+    error.statusCode = 400;
+    error.errorCode = 'VALIDATION_ERROR';
+    throw error;
+  }
+};
+
 /**
  * Регистрация нового пользователя (всегда с ролью 'user')
  */
 export const register = async (username, password) => {
+  assertUsername(username);
+  assertPassword(password);
+
   const allowed = await isRegistrationAllowed();
   if (!allowed) {
     const error = new Error('Регистрация временно отключена администратором');
@@ -56,6 +77,9 @@ export const register = async (username, password) => {
  * Авторизация пользователя (возвращает токен и данные с ролью)
  */
 export const login = async (username, password) => {
+  assertUsername(username);
+  assertPassword(password);
+
   const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
   if (!user) {
     throw new Error('Неверное имя пользователя или пароль');

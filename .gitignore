@@ -18,11 +18,18 @@ dist-ssr/
 # Environment files
 .env
 .env.*
+.env*.local
 !.env.example
-!.env.development
-!.env.production
 !client/.env.development
 !client/.env.production
+
+# Secrets and private keys
+*.pem
+*.key
+*.cert
+*.crt
+id_rsa
+id_ed25519
 
 # Local SQLite databases
 server/data/*.sqlite

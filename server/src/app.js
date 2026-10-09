@@ -13,14 +13,26 @@ import { errorHandler } from './middleware/errorHandler.js';
 // Создаём Express-приложение
 const app = express();
 
+// Скрываем заголовок Express для защиты от сканирования уязвимостей
+app.disable('x-powered-by');
+
 // Доверяем прокси (Vercel/Cloudflare) — чтобы req.ip отдавал реальный IP пользователя
 app.set('trust proxy', true);
+
+// Заголовки безопасности (защита от Clickjacking, MIME-sniffing, XSS)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Подключаем CORS для разрешения запросов с фронтенда
 app.use(cors(config.cors));
 
-// Парсер JSON для чтения тела запросов
-app.use(express.json());
+// Парсер JSON для чтения тела запросов с защитой от DoS большим объёмом данных
+app.use(express.json({ limit: '100kb' }));
 
 // Автоматическая инициализация базы данных перед обработкой запросов
 let dbInitialized = false;
