@@ -106,3 +106,29 @@ export const logActivity = async (userId, method, path, ip) => {
     console.error('Ошибка записи журнала активности:', err.message);
   }
 };
+/**
+ * Сохраняет последний IP пользователя в таблице users.
+ * Выполняется фоново (без await), чтобы не замедлять ответы API.
+ */
+export const touchLastIp = async (userId, ip) => {
+  try {
+    // Нормализация IPv6 в IPv4, если пришёл mapped-адрес типа ::ffff:192.168.1.1
+    let cleanIp = ip;
+    if (cleanIp && cleanIp.startsWith('::ffff:')) {
+      cleanIp = cleanIp.substring(7);
+    }
+
+    // Валидация: только IPv4 и IPv6 (без пустых строк и мусора)
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+    const ipv6Regex = /^(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}$/;
+
+    if (!cleanIp || !(ipv4Regex.test(cleanIp) || ipv6Regex.test(cleanIp))) {
+      // IP невалиден или отсутствует — пропускаем запись
+      return;
+    }
+
+    await db.run('UPDATE users SET last_ip = ? WHERE id = ?', [cleanIp, userId]);
+  } catch (err) {
+    console.error('Ошибка обновления IP:', err.message);
+  }
+};

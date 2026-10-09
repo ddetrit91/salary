@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
 import db from '../db/connection.js';
-import { touchLastActivity, logActivity } from '../services/userService.js';
+import { touchLastActivity, touchLastIp, logActivity } from '../services/userService.js';
 
 // Секретный ключ должен совпадать с тем, что в userService.js
 const JWT_SECRET = config.jwtSecret || 'super-secret-dev-key-change-me-in-production';
@@ -41,8 +41,9 @@ export const authenticate = async (req, res, next) => {
     req.userId = user.id;
     req.user = { id: user.id, username: user.username, role: user.role || 'user' };
 
-    // Обновляем время последней активности и пишем посещение в журнал (фоново)
+    // Обновляем активность и IP пользователя (фоново, без await)
     touchLastActivity(user.id);
+    touchLastIp(user.id, req.ip);
     logActivity(user.id, req.method, req.originalUrl, req.ip);
 
     next();

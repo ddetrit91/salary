@@ -208,6 +208,7 @@ function Admin() {
               <div>Пользователь</div>
               <div>Роль</div>
               <div>Операций</div>
+              <div>IP</div>
               <div>Регистрация</div>
               <div>Последняя активность</div>
               <div style={{ textAlign: 'right' }}>Действия</div>
@@ -224,6 +225,18 @@ function Admin() {
                   </span>
                 </div>
                 <div>{(user.incomesCount ?? 0) + (user.expensesCount ?? 0)}</div>
+                <div 
+                  className={styles.ipCell} 
+                  title={user.lastIp ? 'Нажмите, чтобы скопировать' : 'IP ещё не зафиксирован'}
+                  onClick={() => {
+                    if (user.lastIp) {
+                      navigator.clipboard?.writeText(user.lastIp);
+                    }
+                  }}
+                  style={{ cursor: user.lastIp ? 'pointer' : 'default' }}
+                >
+                  {user.lastIp || '—'}
+                </div>
                 <div>{formatDateTime(user.createdAt)}</div>
                 <div>{formatDateTime(user.lastActivity)}</div>
                 <div className={styles.actions}>

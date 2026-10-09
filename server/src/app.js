@@ -13,6 +13,9 @@ import { errorHandler } from './middleware/errorHandler.js';
 // Создаём Express-приложение
 const app = express();
 
+// Доверяем прокси (Vercel/Cloudflare) — чтобы req.ip отдавал реальный IP пользователя
+app.set('trust proxy', true);
+
 // Подключаем CORS для разрешения запросов с фронтенда
 app.use(cors(config.cors));
 
