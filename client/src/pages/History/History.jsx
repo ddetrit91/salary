@@ -6,6 +6,7 @@ import TransactionForm from '../../components/TransactionForm/TransactionForm';
 import { getIncomes, addIncome, updateIncome, deleteIncome } from '../../services/incomeService';
 import { getExpenses, addExpense, updateExpense, deleteExpense } from '../../services/expenseService';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../../utils/constants';
+import { exportTransactionsToExcel } from '../../utils/exportExcel';
 import { useToast } from '../../components/Toast/ToastContext';
 
 function History() {
@@ -82,6 +83,15 @@ function History() {
   useEffect(() => {
     setCategoryFilter('all');
   }, [typeFilter]);
+    // Экспорт текущих (отфильтрованных!) операций в CSV
+  const handleExport = () => {
+    const success = exportTransactionsToExcel(filteredTransactions);
+    if (success) {
+      toast.success(`Экспортировано записей: ${filteredTransactions.length}`);
+    } else {
+      toast.error('Нечего экспортировать — нет данных по фильтру');
+    }
+  };
 
   // Управление модалкой
   const handleOpenModal = () => {
@@ -149,7 +159,7 @@ function History() {
       console.error('Ошибка при сохранении:', err);
       toast.error('Не удалось сохранить операцию. Проверьте данные.');
     }
-  };
+  }; 
 
   return (
     <div className={styles.history}>
@@ -206,6 +216,16 @@ function History() {
             onChange={(e) => setDateTo(e.target.value)}
           />
         </div>
+
+        {/* Кнопка экспорта в Excel — прижата вправо панели фильтров */}
+        <button
+          className={styles.exportButton}
+          onClick={handleExport}
+          title="Скачать операции в Excel (.xlsx)"
+        >
+          <span className={styles.excelIcon}>X</span>
+          Скачать операции
+        </button>
       </div>
 
       {/* Список транзакций или индикатор загрузки */}

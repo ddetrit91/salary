@@ -1,13 +1,13 @@
-import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import styles from './PieChart.module.css';
 
-// Цвета для секторов диаграммы
+// Цвета для секторов диаграммы (используются, если в данных нет своих)
 const COLORS = [
   '#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0',
   '#4895ef', '#560bad', '#b5179e', '#f77f00', '#06ffa5'
 ];
 
-function PieChart({ data = [], title = 'Распределение' }) {
+function PieChart({ data = [] }) {
   // Если данных нет — показываем заглушку
   if (!data || data.length === 0) {
     return (
@@ -19,36 +19,23 @@ function PieChart({ data = [], title = 'Распределение' }) {
     );
   }
 
+  // Считаем общую сумму для процентов
+  const total = data.reduce((sum, entry) => sum + (entry.value || 0), 0);
+
   // Форматирование значения в tooltip
   const renderTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const data = payload[0];
+      const item = payload[0];
+      const percentage = ((item.value / total) * 100).toFixed(1);
       return (
         <div className={styles.tooltip}>
-          <p className={styles.tooltipLabel}>{data.name}</p>
-          <p className={styles.tooltipValue}>{data.value.toLocaleString('ru-RU')} сум</p>
+          <p className={styles.tooltipLabel}>{item.name}</p>
+          <p className={styles.tooltipValue}>{item.value.toLocaleString('ru-RU')} сум</p>
+          <p className={styles.tooltipPercent}>{percentage}% от общей суммы</p>
         </div>
       );
     }
     return null;
-  };
-
-  // Форматирование легенды
-  const renderLegend = (props) => {
-    const { payload } = props;
-    return (
-      <ul className={styles.legend}>
-        {payload.map((entry, index) => (
-          <li key={`legend-${index}`} className={styles.legendItem}>
-            <span 
-              className={styles.legendDot} 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className={styles.legendText}>{entry.value}</span>
-          </li>
-        ))}
-      </ul>
-    );
   };
 
   return (
@@ -64,6 +51,9 @@ function PieChart({ data = [], title = 'Распределение' }) {
             fill="#8884d8"
             dataKey="value"
             nameKey="name"
+            animationBegin={0}
+            animationDuration={800}
+            animationEasing="ease-out"
           >
             {data.map((entry, index) => (
               <Cell 
@@ -73,9 +63,29 @@ function PieChart({ data = [], title = 'Распределение' }) {
             ))}
           </Pie>
           <Tooltip content={renderTooltip} />
-          <Legend content={renderLegend} />
         </RechartsPieChart>
       </ResponsiveContainer>
+
+      {/* Кастомная легенда под графиком с суммами и процентами */}
+      <ul className={styles.legend}>
+        {data.map((entry, index) => {
+          const color = entry.color || COLORS[index % COLORS.length];
+          const percentage = ((entry.value / total) * 100).toFixed(1);
+          return (
+            <li key={`legend-${index}`} className={styles.legendItem}>
+              <span 
+                className={styles.legendDot} 
+                style={{ backgroundColor: color }}
+              />
+              <span className={styles.legendText}>{entry.name}</span>
+              <span className={styles.legendAmount}>
+                {entry.value.toLocaleString('ru-RU')} сум
+              </span>
+              <span className={styles.legendPercent}>({percentage}%)</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

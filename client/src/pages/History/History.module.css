@@ -123,4 +123,75 @@
     bottom: 16px;
     right: 16px;
   }
+}/* ========== Шапка страницы с кнопкой экспорта ========== */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* Заголовок внутри шапки без собственного отступа */
+.pageHeader .title {
+  margin: 0;
+}
+
+/* Кнопка экспорта: контурная в светлой теме, адаптируется в тёмной */
+.exportButton {
+  padding: 8px 16px;
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.exportButton:hover {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* На мобильных кнопка компактнее */
+@media (max-width: 480px) {
+  .exportButton {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}/* ========== Кнопка Excel в панели фильтров ========== */
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;   /* прижимает кнопку вправо, в пустое место панели */
+  align-self: center;
+}
+
+/* Зелёный значок «X» в фирменном цвете Excel */
+.excelIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: #217346;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* На мобильных кнопка становится полной шириной под фильтрами */
+@media (max-width: 768px) {
+  .exportButton {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
 }
