@@ -106,7 +106,7 @@ function Dashboard() {
       <h1 className={styles.title}>Главная</h1>
       
       {/* Сетка карточек с балансом */}
-      <div className={styles.cardsGrid}>
+      <div className={styles.cardsGrid} data-tour="balance-cards">
         <BalanceCard 
           title="Доходы" 
           amount={balance.totalIncome} 
@@ -135,6 +135,7 @@ function Dashboard() {
       {/* Плавающая кнопка добавления */}
       <button 
         className={styles.addButton} 
+        data-tour="add-button"
         title="Добавить операцию"
         onClick={handleOpenModal}
       >

@@ -1,7 +1,7 @@
 import styles from './Header.module.css';
 import { useTheme } from '../../context/ThemeContext.jsx';
 
-function Header({ currentPage, onNavigate, user, onLogout }) {
+function Header({ currentPage, onNavigate, user, onLogout, onStartTour }) {
   // Получаем тему и функцию переключения
   const { theme, toggleTheme } = useTheme();
 
@@ -20,7 +20,7 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>
+      <div className={styles.logo} data-tour="logo">
         💰 Salary Tracker
       </div>
       
@@ -28,6 +28,7 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
         {navItems.map((item) => (
           <button
             key={item.id}
+            data-tour={`nav-${item.id}`}
             className={`${styles.navButton} ${currentPage === item.id ? styles.active : ''}`}
             onClick={() => onNavigate(item.id)}
           >
@@ -36,7 +37,7 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
         ))}
       </nav>
 
-      <div className={styles.userInfo}>
+      <div className={styles.userInfo} data-tour="user-controls">
         <span className={styles.username}>
           👤 {user?.username || 'Пользователь'}
           {user?.role === 'admin' && (
@@ -45,6 +46,16 @@ function Header({ currentPage, onNavigate, user, onLogout }) {
             </span>
           )}
         </span>
+
+        {/* Кнопка запуска онбординга */}
+        <button
+          className={styles.tourButton}
+          onClick={onStartTour}
+          title="Инструкция и подсказки по возможностям сервиса"
+        >
+          <span className={styles.tourIcon}>💡</span>
+          <span className={styles.tourText}>Обучение</span>
+        </button>
 
         {/* Кнопка переключения темы */}
         <button

@@ -1,0 +1,443 @@
+/* Контейнер тура на весь экран */
+.tourOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: auto;
+  font-family: inherit;
+}
+
+/* Полупрозрачный затемняющий фон */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* Выделяющая рамка со свечением вокруг целевого элемента */
+.spotlight {
+  position: fixed;
+  border-radius: 12px;
+  pointer-events: none;
+  box-shadow: 
+    0 0 0 4px rgba(67, 97, 238, 0.6),
+    0 0 25px rgba(67, 97, 238, 0.45);
+  border: 2px solid #4361ee;
+  background-color: rgba(67, 97, 238, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pulseSpotlight 2s infinite ease-in-out;
+  z-index: 10000;
+}
+
+/* Всплывающая карточка подсказки */
+.tooltipCard {
+  position: fixed;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  color: #1e293b;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 
+    0 20px 40px -10px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(226, 232, 240, 0.8);
+  z-index: 10001;
+  animation: slideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1), left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+/* Стрелка-указатель */
+.arrowPointer {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.arrowHead {
+  width: 14px;
+  height: 14px;
+  background-color: #ffffff;
+  transform: rotate(45deg);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Позиционирование стрелки в зависимости от положения тултипа */
+.placement_bottom .arrowPointer {
+  top: -8px;
+  left: 36px;
+}
+.placement_bottom .arrowHead {
+  border-bottom: none;
+  border-right: none;
+}
+
+.placement_top .arrowPointer {
+  bottom: -8px;
+  left: 36px;
+}
+.placement_top .arrowHead {
+  border-top: none;
+  border-left: none;
+}
+
+.placement_left .arrowPointer {
+  right: -8px;
+  top: 36px;
+}
+.placement_left .arrowHead {
+  border-bottom: none;
+  border-left: none;
+}
+
+.placement_right .arrowPointer {
+  left: -8px;
+  top: 36px;
+}
+.placement_right .arrowHead {
+  border-top: none;
+  border-right: none;
+}
+
+/* Верхняя строка карточки */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #e0e7ff, #eff6ff);
+  color: #3730a3;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid #c7d2fe;
+}
+
+.badgeIcon {
+  font-size: 14px;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #94a3b8;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+/* Заголовок шага */
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+  line-height: 1.35;
+  flex-shrink: 0;
+}
+
+/* Информационные строки */
+.infoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  background-color: #f8fafc;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 240px;
+  scrollbar-width: thin;
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.infoText {
+  color: #334155;
+}
+
+/* Выделение блока пользы */
+.benefitRow {
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.benefitRow .infoLabel {
+  color: #059669;
+}
+
+.benefitRow .infoText {
+  color: #065f46;
+  font-weight: 500;
+}
+
+/* Нижняя панель */
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/* Точки прогресса */
+.dotsContainer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dot:hover {
+  background-color: #94a3b8;
+  transform: scale(1.15);
+}
+
+.activeDot {
+  width: 20px;
+  border-radius: 4px;
+  background-color: #4361ee;
+}
+
+/* Кнопки действий */
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.backBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  background-color: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.nextBtn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4361ee, #3b82f6);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.35);
+  transition: all 0.2s ease;
+}
+
+.nextBtn:hover {
+  background: linear-gradient(135deg, #3752db, #2563eb);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(67, 97, 238, 0.45);
+}
+
+.nextBtn:active {
+  transform: translateY(0);
+}
+
+/* ========== ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ ========== */
+[data-theme='dark'] .tooltipCard {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+  box-shadow: 
+    0 20px 40px -10px rgba(0, 0, 0, 0.6),
+    0 0 0 1px #334155;
+}
+
+[data-theme='dark'] .arrowHead {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme='dark'] .badge {
+  background: linear-gradient(135deg, #312e81, #1e3a8a);
+  color: #c7d2fe;
+  border-color: #4338ca;
+}
+
+[data-theme='dark'] .closeBtn {
+  color: #64748b;
+}
+
+[data-theme='dark'] .closeBtn:hover {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .title {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .infoContent {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
+[data-theme='dark'] .infoLabel {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .infoText {
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] .benefitRow {
+  border-top-color: #334155;
+}
+
+[data-theme='dark'] .benefitRow .infoLabel {
+  color: #34d399;
+}
+
+[data-theme='dark'] .benefitRow .infoText {
+  color: #a7f3d0;
+}
+
+[data-theme='dark'] .dot {
+  background-color: #475569;
+}
+
+[data-theme='dark'] .dot:hover {
+  background-color: #64748b;
+}
+
+[data-theme='dark'] .activeDot {
+  background-color: #60a5fa;
+}
+
+[data-theme='dark'] .backBtn {
+  color: #94a3b8;
+  border-color: #475569;
+}
+
+[data-theme='dark'] .backBtn:hover {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulseSpotlight {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 4px rgba(67, 97, 238, 0.6),
+      0 0 20px rgba(67, 97, 238, 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 6px rgba(67, 97, 238, 0.85),
+      0 0 35px rgba(67, 97, 238, 0.65);
+  }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 640px) {
+  .tooltipCard {
+    padding: 14px 16px;
+    border-radius: 14px;
+    max-height: calc(100vh - 24px);
+  }
+
+  .title {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .infoContent {
+    padding: 10px 12px;
+    gap: 7px;
+    margin-bottom: 12px;
+    max-height: 190px;
+  }
+
+  .infoRow {
+    font-size: 12px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .backBtn, .nextBtn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
